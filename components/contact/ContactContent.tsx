@@ -1,6 +1,11 @@
 "use client";
 
-import { GitHubIcon, LinkedInIcon } from "@/components/ui/BrandIcons";
+import {
+  FacebookIcon,
+  GitHubIcon,
+  LinkedInIcon,
+  TelegramIcon,
+} from "@/components/ui/BrandIcons";
 import {
   FadeInSection,
   StaggerContainer,
@@ -71,8 +76,8 @@ export default function ContactContent() {
             >
               <div>
                 <div className="flex items-center justify-between">
-                  <div className="flex h-11 w-11 items-center justify-center rounded-xl border border-white/15 bg-white/[0.06] text-white">
-                    <GitHubIcon className="h-5 w-5" />
+                  <div className="flex h-11 w-11 items-center justify-center rounded-xl border border-white/25 bg-white/[0.09] text-white shadow-[0_6px_18px_rgba(255,255,255,0.12)]">
+                    <GitHubIcon className="h-6 w-6" />
                   </div>
                   <ExternalLink className="h-4 w-4 text-slate-400 transition group-hover:text-white" />
                 </div>
@@ -99,8 +104,8 @@ export default function ContactContent() {
             >
               <div>
                 <div className="flex items-center justify-between">
-                  <div className="flex h-11 w-11 items-center justify-center rounded-xl border border-sky-400/30 bg-sky-500/15 text-sky-300">
-                    <LinkedInIcon className="h-5 w-5" />
+                  <div className="flex h-11 w-11 items-center justify-center rounded-xl border border-[#0A66C2]/45 bg-[#0A66C2]/15 shadow-[0_6px_20px_rgba(10,102,194,0.28)]">
+                    <LinkedInIcon className="h-6 w-6" />
                   </div>
                   <ExternalLink className="h-4 w-4 text-slate-400 transition group-hover:text-white" />
                 </div>
@@ -166,21 +171,37 @@ export default function ContactContent() {
                 <h2 className="mt-4 font-[family-name:var(--font-display)] text-lg font-bold text-white">
                   Social Media
                 </h2>
-                <div className="mt-2 space-y-2">
-                  {CONTACT_DATA.socials.map((social) => (
-                    <a
-                      key={social.name}
-                      href={social.url}
-                      target="_blank"
-                      rel="noreferrer"
-                      className="flex items-center justify-between rounded-lg border border-white/10 bg-white/[0.03] px-3 py-1.5 text-xs text-slate-200 transition hover:border-sky-400/40 hover:text-white"
-                    >
-                      <span>{social.name}</span>
-                      <span className="font-mono text-[11px] text-sky-300">
-                        {social.handle}
-                      </span>
-                    </a>
-                  ))}
+                <div className="mt-2.5 space-y-2">
+                  {CONTACT_DATA.socials.map((social) => {
+                    const isFacebook = social.name.toLowerCase().includes("facebook");
+                    const isTelegram = social.name.toLowerCase().includes("telegram");
+                    return (
+                      <a
+                        key={social.name}
+                        href={social.url}
+                        target="_blank"
+                        rel="noreferrer"
+                        className="flex items-center justify-between gap-2 rounded-xl border border-white/10 bg-white/[0.03] px-3 py-2 text-xs text-slate-200 transition hover:border-sky-400/45 hover:bg-white/[0.06] hover:text-white"
+                      >
+                        <span className="inline-flex items-center gap-2 font-medium">
+                          {isFacebook && <FacebookIcon className="h-4 w-4 shrink-0" />}
+                          {isTelegram && <TelegramIcon className="h-4 w-4 shrink-0" />}
+                          <span>{social.name}</span>
+                        </span>
+                        <span
+                          className={`truncate font-mono text-[11px] ${
+                            isFacebook
+                              ? "text-[#60A5FA]"
+                              : isTelegram
+                                ? "text-[#38BDF8]"
+                                : "text-sky-300"
+                          }`}
+                        >
+                          {social.handle}
+                        </span>
+                      </a>
+                    );
+                  })}
                 </div>
               </div>
               <p className="mt-4 text-xs text-slate-400">

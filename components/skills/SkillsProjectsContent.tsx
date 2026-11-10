@@ -1,7 +1,7 @@
 "use client";
 
 import MemoryPhoto from "@/components/gallery/MemoryPhoto";
-import { GitHubIcon } from "@/components/ui/BrandIcons";
+import { getTechVisualMeta, GitHubIcon } from "@/components/ui/BrandIcons";
 import {
   FadeInSection,
   StaggerContainer,
@@ -168,22 +168,56 @@ export default function SkillsProjectsContent() {
                 </div>
 
                 <div className="mt-5 space-y-3">
-                  {group.items.map((skill) => (
-                    <div
-                      key={skill.name}
-                      className="rounded-2xl border border-white/[0.07] bg-white/[0.03] px-4 py-3 transition hover:border-indigo-400/30"
-                    >
-                      <div className="flex items-center justify-between gap-2">
-                        <span className="font-[family-name:var(--font-display)] text-sm font-semibold text-white">
-                          {skill.name}
-                        </span>
-                        <span className="rounded-full border border-white/10 bg-white/[0.05] px-2.5 py-0.5 font-mono text-[10px] text-sky-300">
-                          {skill.stage}
-                        </span>
+                  {group.items.map((skill) => {
+                    const tech = getTechVisualMeta(skill.name, "md");
+                    return (
+                      <div
+                        key={skill.name}
+                        className="group relative flex items-center gap-3.5 overflow-hidden rounded-2xl border border-white/[0.08] bg-white/[0.03] px-4 py-3.5 transition duration-300 hover:-translate-y-0.5 hover:border-white/20 hover:bg-white/[0.055]"
+                      >
+                        <span
+                          aria-hidden="true"
+                          className="absolute inset-y-3 left-0 w-[3px] rounded-r-full transition-all duration-300 group-hover:inset-y-2"
+                          style={{
+                            backgroundColor: tech.color,
+                            boxShadow: `0 0 12px ${tech.glow}`,
+                          }}
+                        />
+
+                        <div
+                          className="flex h-11 w-12 shrink-0 items-center justify-center rounded-xl border transition-transform duration-300 group-hover:scale-105"
+                          style={{
+                            backgroundColor: tech.bg,
+                            borderColor: tech.border,
+                            boxShadow: `0 6px 20px ${tech.glow}`,
+                          }}
+                        >
+                          {tech.icon}
+                        </div>
+
+                        <div className="min-w-0 flex-1">
+                          <div className="flex flex-wrap items-center justify-between gap-2">
+                            <span className="font-[family-name:var(--font-display)] text-sm font-semibold text-white">
+                              {skill.name}
+                            </span>
+                            <span
+                              className="shrink-0 rounded-full border px-2.5 py-0.5 font-mono text-[10px] font-medium"
+                              style={{
+                                backgroundColor: tech.bg,
+                                borderColor: tech.border,
+                                color: tech.textColor,
+                              }}
+                            >
+                              {skill.stage}
+                            </span>
+                          </div>
+                          <p className="mt-1 text-xs leading-relaxed text-slate-300">
+                            {skill.focus}
+                          </p>
+                        </div>
                       </div>
-                      <p className="mt-1 text-xs text-slate-300">{skill.focus}</p>
-                    </div>
-                  ))}
+                    );
+                  })}
                 </div>
               </motion.article>
             ))}
@@ -249,15 +283,24 @@ export default function SkillsProjectsContent() {
                     </div>
 
                     <div className="mt-6 space-y-4 border-t border-white/10 pt-4">
-                      <div className="flex flex-wrap gap-1.5">
-                        {project.techStack.map((tech) => (
-                          <span
-                            key={tech}
-                            className="rounded-lg border border-white/10 bg-white/[0.04] px-2.5 py-1 font-mono text-[11px] text-slate-200"
-                          >
-                            {tech}
-                          </span>
-                        ))}
+                      <div className="flex flex-wrap gap-2">
+                        {project.techStack.map((tech) => {
+                          const tagMeta = getTechVisualMeta(tech, "sm");
+                          return (
+                            <span
+                              key={tech}
+                              className="inline-flex items-center gap-1.5 rounded-lg border px-2.5 py-1 font-mono text-[11px] font-medium"
+                              style={{
+                                backgroundColor: tagMeta.bg,
+                                borderColor: tagMeta.border,
+                                color: tagMeta.textColor,
+                              }}
+                            >
+                              {tagMeta.icon}
+                              <span>{tech}</span>
+                            </span>
+                          );
+                        })}
                       </div>
 
                       <div className="flex flex-wrap gap-2">
