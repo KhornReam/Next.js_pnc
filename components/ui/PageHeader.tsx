@@ -25,15 +25,15 @@ export default function PageHeader({
   backLabel = "Back to Home",
 }: PageHeaderProps) {
   return (
-    <section className="relative overflow-hidden border-b border-white/[0.07] pt-28 pb-16 sm:pt-36 sm:pb-20">
-      {/* Subtle atmospheric glow */}
+    <section className="relative overflow-hidden pt-28 pb-16 sm:pt-36 sm:pb-20">
+      {/* Radial-masked atmospheric accent canopy blending seamlessly into AmbientBackdrop */}
       <div
         aria-hidden="true"
-        className={`pointer-events-none absolute inset-x-0 top-0 h-full bg-gradient-to-b ${accentGradient}`}
+        className={`backdrop-header-mask pointer-events-none absolute inset-0 bg-gradient-to-b ${accentGradient}`}
       />
       <div
         aria-hidden="true"
-        className="cosmic-grid-bg pointer-events-none absolute inset-0 opacity-50"
+        className="pointer-events-none absolute inset-x-0 bottom-0 h-px bg-gradient-to-r from-transparent via-indigo-400/30 to-transparent"
       />
 
       <div className="relative mx-auto max-w-6xl px-4 sm:px-6 lg:px-8">

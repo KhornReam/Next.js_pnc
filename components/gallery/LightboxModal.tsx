@@ -129,25 +129,36 @@ export default function LightboxModal({
             </button>
 
             {/* Media stage */}
-            <div className="relative flex min-h-[260px] items-center justify-center bg-[#030614] sm:min-h-[380px] lg:min-h-[520px]">
+            <div className="relative flex min-h-[260px] items-center justify-center overflow-hidden bg-[#030614] p-3 sm:min-h-[380px] sm:p-5 lg:min-h-[540px]">
               {!isPlaceholder ? (
                 isVideo ? (
                   <video
                     src={resolvedSrc}
                     controls
                     autoPlay
-                    className="max-h-[75vh] w-full object-contain"
+                    className="relative z-10 max-h-[76vh] w-full rounded-xl object-contain shadow-[0_24px_60px_rgba(0,0,0,0.85)]"
                   />
                 ) : (
-                  <Image
-                    src={resolvedSrc}
-                    alt={item.title}
-                    width={1400}
-                    height={900}
-                    unoptimized
-                    onError={() => setFailedSrc(resolvedSrc)}
-                    className="max-h-[75vh] w-auto max-w-full object-contain"
-                  />
+                  <>
+                    <Image
+                      src={resolvedSrc}
+                      alt=""
+                      fill
+                      unoptimized
+                      aria-hidden="true"
+                      sizes="60vw"
+                      className="scale-125 object-cover opacity-30 blur-3xl brightness-50 saturate-150"
+                    />
+                    <Image
+                      src={resolvedSrc}
+                      alt={item.title}
+                      width={1600}
+                      height={1200}
+                      unoptimized
+                      onError={() => setFailedSrc(resolvedSrc)}
+                      className="relative z-10 max-h-[78vh] w-auto max-w-full rounded-xl object-contain shadow-[0_24px_60px_rgba(0,0,0,0.85)] ring-1 ring-white/15"
+                    />
+                  </>
                 )
               ) : (
                 <div className="cosmic-grid-bg flex h-full w-full flex-col items-center justify-center p-8 text-center">

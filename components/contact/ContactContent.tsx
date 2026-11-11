@@ -4,7 +4,6 @@ import {
   FacebookIcon,
   GitHubIcon,
   LinkedInIcon,
-  TelegramIcon,
 } from "@/components/ui/BrandIcons";
 import {
   FadeInSection,
@@ -20,7 +19,6 @@ import {
   Mail,
   MessageSquare,
   Send,
-  Share2,
 } from "lucide-react";
 import { type FormEvent, useState } from "react";
 
@@ -161,53 +159,32 @@ export default function ContactContent() {
             </div>
           </StaggerItem>
 
-          {/* Social Media */}
+          {/* Facebook */}
           <StaggerItem>
-            <div className="glass-panel glass-panel-hover flex h-full flex-col justify-between rounded-2xl p-6">
+            <a
+              href={CONTACT_DATA.socials[0]?.url || "https://www.facebook.com/khorn.ream.9"}
+              target="_blank"
+              rel="noreferrer"
+              className="glass-panel glass-panel-hover group flex h-full flex-col justify-between rounded-2xl p-6"
+            >
               <div>
-                <div className="flex h-11 w-11 items-center justify-center rounded-xl border border-indigo-400/30 bg-indigo-500/15 text-indigo-300">
-                  <Share2 className="h-5 w-5" />
+                <div className="flex items-center justify-between">
+                  <div className="flex h-11 w-11 items-center justify-center rounded-xl border border-[#1877F2]/45 bg-[#1877F2]/15 shadow-[0_6px_20px_rgba(24,119,242,0.28)]">
+                    <FacebookIcon className="h-6 w-6" />
+                  </div>
+                  <ExternalLink className="h-4 w-4 text-slate-400 transition group-hover:text-white" />
                 </div>
                 <h2 className="mt-4 font-[family-name:var(--font-display)] text-lg font-bold text-white">
-                  Social Media
+                  Facebook
                 </h2>
-                <div className="mt-2.5 space-y-2">
-                  {CONTACT_DATA.socials.map((social) => {
-                    const isFacebook = social.name.toLowerCase().includes("facebook");
-                    const isTelegram = social.name.toLowerCase().includes("telegram");
-                    return (
-                      <a
-                        key={social.name}
-                        href={social.url}
-                        target="_blank"
-                        rel="noreferrer"
-                        className="flex items-center justify-between gap-2 rounded-xl border border-white/10 bg-white/[0.03] px-3 py-2 text-xs text-slate-200 transition hover:border-sky-400/45 hover:bg-white/[0.06] hover:text-white"
-                      >
-                        <span className="inline-flex items-center gap-2 font-medium">
-                          {isFacebook && <FacebookIcon className="h-4 w-4 shrink-0" />}
-                          {isTelegram && <TelegramIcon className="h-4 w-4 shrink-0" />}
-                          <span>{social.name}</span>
-                        </span>
-                        <span
-                          className={`truncate font-mono text-[11px] ${
-                            isFacebook
-                              ? "text-[#60A5FA]"
-                              : isTelegram
-                                ? "text-[#38BDF8]"
-                                : "text-sky-300"
-                          }`}
-                        >
-                          {social.handle}
-                        </span>
-                      </a>
-                    );
-                  })}
-                </div>
+                <p className="mt-1 font-mono text-xs text-[#60A5FA]">
+                  {CONTACT_DATA.socials[0]?.handle || "Khorn Ream"}
+                </p>
               </div>
               <p className="mt-4 text-xs text-slate-400">
                 Community & friendly updates
               </p>
-            </div>
+            </a>
           </StaggerItem>
         </StaggerContainer>
 
@@ -317,17 +294,12 @@ export default function ContactContent() {
               </div>
 
               <div className="mt-8 rounded-2xl border border-white/10 bg-white/[0.03] p-5 text-xs leading-relaxed text-slate-300">
-                <p className="font-semibold text-white">Customizable Profile Links</p>
+                <p className="font-semibold text-white">
+                  {SITE_CONFIG.studentName} • {SITE_CONFIG.cohortLabel}
+                </p>
                 <p className="mt-1">
-                  To update your real GitHub, LinkedIn, Email, and Social links, edit{" "}
-                  <code className="rounded bg-white/10 px-1.5 py-0.5 font-mono text-sky-300">
-                    CONTACT_DATA
-                  </code>{" "}
-                  inside{" "}
-                  <code className="rounded bg-white/10 px-1.5 py-0.5 font-mono text-sky-300">
-                    data/journeyData.ts
-                  </code>
-                  .
+                  Based in {SITE_CONFIG.currentLocation} (Hometown: {SITE_CONFIG.hometown}) • Focused on{" "}
+                  <span className="text-sky-300">{SITE_CONFIG.mainInterest}</span> & Software Engineering.
                 </p>
               </div>
             </div>

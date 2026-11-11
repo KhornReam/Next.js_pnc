@@ -14,13 +14,15 @@ import {
   Eye,
   Layers,
   MousePointerClick,
+  Pause,
+  Play,
   Rocket,
   Sparkles,
 } from "lucide-react";
 import dynamic from "next/dynamic";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 const ThreeTimelineScene = dynamic(
   () => import("@/components/three/ThreeTimelineScene"),
@@ -34,6 +36,9 @@ const ThreeTimelineScene = dynamic(
   }
 );
 
+const TOUR_ORDER: TimelineStageId[] = ["year-1", "year-2", "my-future"];
+const TOUR_CYCLE_MS = 6500;
+
 export default function JourneyExperience() {
   const searchParams = useSearchParams();
   const stageParam = searchParams.get("stage");
@@ -44,16 +49,49 @@ export default function JourneyExperience() {
       ? stageParam
       : null;
 
-  const [selectedStage, setSelectedStage] = useState<TimelineStageId | null>(null);
+  const [selectedStage, setSelectedStage] = useState<TimelineStageId | null>(
+    null
+  );
   const [overviewMode, setOverviewMode] = useState(false);
+  const [manualAutoTour, setManualAutoTour] = useState<boolean | null>(null);
+  const [hoverPaused, setHoverPaused] = useState(false);
 
   const activeStage: TimelineStageId = selectedStage ?? queryStage ?? "year-1";
+  const autoTourEnabled = manualAutoTour ?? !queryStage;
+  const isTourRunning = autoTourEnabled && !overviewMode && !hoverPaused;
+
   const currentIndex = JOURNEY_STAGES.findIndex((s) => s.id === activeStage);
   const currentStage = JOURNEY_STAGES[currentIndex] ?? JOURNEY_STAGES[0];
 
-  const handleSelectStage = (stageId: TimelineStageId) => {
+  useEffect(() => {
+    if (!isTourRunning) return;
+    if (
+      typeof window !== "undefined" &&
+      window.matchMedia("(prefers-reduced-motion: reduce)").matches
+    ) {
+      return;
+    }
+
+    const timer = window.setInterval(() => {
+      setSelectedStage((prev) => {
+        const base = prev ?? queryStage ?? "year-1";
+        const nextIdx = (TOUR_ORDER.indexOf(base) + 1) % TOUR_ORDER.length;
+        return TOUR_ORDER[nextIdx];
+      });
+    }, TOUR_CYCLE_MS);
+
+    return () => window.clearInterval(timer);
+  }, [isTourRunning, queryStage]);
+
+  const handleSelectStage = (
+    stageId: TimelineStageId,
+    fromAutoToggle = false
+  ) => {
     setSelectedStage(stageId);
     setOverviewMode(false);
+    if (!fromAutoToggle) {
+      setManualAutoTour(false);
+    }
   };
 
   const getIcon = (id: TimelineStageId) => {
@@ -67,7 +105,7 @@ export default function JourneyExperience() {
       <PageHeader
         eyebrow="Chapter 02 • My Journey"
         title="The Interactive 3D Timeline"
-        description="Navigate across two transformative years at PNC and into the future — interact with any 3D constellation node or toggle overview mode to inspect the entire trajectory."
+        description="Navigate across two transformative years at PNC and into the future — interact with any 3D constellation node, toggle Auto Tour flight, or inspect the entire trajectory."
         icon={<Compass className="h-3.5 w-3.5 text-sky-400" />}
         accentGradient="from-sky-500/20 via-indigo-500/15 to-transparent"
       />
@@ -75,7 +113,11 @@ export default function JourneyExperience() {
       <div className="mx-auto max-w-7xl space-y-14 px-4 py-12 sm:px-6 lg:px-8">
         {/* INTERACTIVE 3D CONSTELLATION STAGE */}
         <FadeInSection>
-          <div className="glass-panel relative overflow-hidden rounded-3xl">
+          <div
+            onMouseEnter={() => setHoverPaused(true)}
+            onMouseLeave={() => setHoverPaused(false)}
+            className="glass-panel relative overflow-hidden rounded-3xl"
+          >
             <div className="flex flex-wrap items-center justify-between gap-3 border-b border-white/10 bg-slate-950/40 px-5 py-3.5 sm:px-7">
               <div className="flex items-center gap-2 text-xs text-slate-300">
                 <MousePointerClick className="h-4 w-4 text-sky-400" />
@@ -84,7 +126,33 @@ export default function JourneyExperience() {
                 </span>
               </div>
 
-              <div className="flex items-center gap-2">
+              <div className="flex flex-wrap items-center gap-2">
+                <button
+                  type="button"
+                  onClick={() => {
+                    const next = !autoTourEnabled;
+                    setManualAutoTour(next);
+                    if (next) setOverviewMode(false);
+                  }}
+                  className={`inline-flex items-center gap-1.5 rounded-full border px-3.5 py-1.5 font-mono text-[11px] uppercase tracking-wider transition ${
+                    autoTourEnabled && !overviewMode
+                      ? "border-indigo-400/50 bg-indigo-500/20 text-indigo-100"
+                      : "border-white/15 bg-white/[0.04] text-slate-300 hover:border-white/30 hover:text-white"
+                  }`}
+                >
+                  {autoTourEnabled && !overviewMode ? (
+                    <>
+                      <Pause className="h-3.5 w-3.5 text-sky-300" />
+                      <span>Auto Tour On</span>
+                    </>
+                  ) : (
+                    <>
+                      <Play className="h-3.5 w-3.5 text-sky-300" />
+                      <span>Auto Tour Off</span>
+                    </>
+                  )}
+                </button>
+
                 <button
                   type="button"
                   onClick={() => setOverviewMode((prev) => !prev)}
@@ -110,7 +178,7 @@ export default function JourneyExperience() {
               <ThreeTimelineScene
                 activeStage={activeStage}
                 overviewMode={overviewMode}
-                onSelectStage={handleSelectStage}
+                onSelectStage={(id) => handleSelectStage(id)}
               />
 
               {/* Sleek bottom chapter stepper dock */}
@@ -122,7 +190,7 @@ export default function JourneyExperience() {
                       key={stage.id}
                       type="button"
                       onClick={() => handleSelectStage(stage.id)}
-                      className={`pointer-events-auto inline-flex items-center gap-2.5 rounded-2xl border px-4 py-2 text-xs font-semibold backdrop-blur-xl transition sm:text-sm ${
+                      className={`pointer-events-auto relative inline-flex items-center gap-2.5 overflow-hidden rounded-2xl border px-4 py-2 text-xs font-semibold backdrop-blur-xl transition sm:text-sm ${
                         selected
                           ? "border-white/35 bg-slate-900/90 text-white shadow-[0_0_28px_rgba(99,102,241,0.45)]"
                           : "border-white/10 bg-slate-950/75 text-slate-300 hover:border-white/25 hover:text-white"
@@ -132,13 +200,29 @@ export default function JourneyExperience() {
                         className="h-2 w-2 rounded-full"
                         style={{
                           backgroundColor: stage.accentColor,
-                          boxShadow: selected ? `0 0 10px ${stage.accentColor}` : "none",
+                          boxShadow: selected
+                            ? `0 0 10px ${stage.accentColor}`
+                            : "none",
                         }}
                       />
                       <span className="font-mono text-[11px] text-slate-400">
                         {stage.stepNumber}
                       </span>
                       <span>{stage.shortTitle}</span>
+
+                      {selected && (
+                        <motion.span
+                          key={`tour-bar-${stage.id}-${isTourRunning}`}
+                          initial={{ scaleX: 0 }}
+                          animate={{ scaleX: isTourRunning ? 1 : 0 }}
+                          transition={{
+                            duration: isTourRunning ? TOUR_CYCLE_MS / 1000 : 0.2,
+                            ease: "linear",
+                          }}
+                          className="absolute inset-x-1.5 bottom-0.5 h-[2px] origin-left rounded-full"
+                          style={{ backgroundColor: stage.accentColor }}
+                        />
+                      )}
                     </button>
                   );
                 })}
@@ -283,7 +367,7 @@ export default function JourneyExperience() {
           <section className="border-t border-white/10 pt-12">
             <MemoryGallery
               title="Year 1 & Year 2 Photo Highlights"
-              subtitle="Filter through my first-year, second-year, and classmate memories. Click any card to view details or preview your uploaded photos."
+              subtitle="Filter through my first-year, second-year, and classmate memories. Click any card to inspect the full photograph in the lightbox."
               categories={["first-year", "second-year", "classmates"]}
               defaultLayout="grid"
             />

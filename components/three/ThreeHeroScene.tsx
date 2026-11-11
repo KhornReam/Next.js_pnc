@@ -5,6 +5,34 @@ import * as THREE from "three";
 import { RoomEnvironment } from "three/examples/jsm/environments/RoomEnvironment.js";
 import { RoundedBoxGeometry } from "three/examples/jsm/geometries/RoundedBoxGeometry.js";
 
+export interface ThreeHeroSceneProps {
+  activeChapter?: 0 | 1 | 2;
+}
+
+const CHAPTER_THEMES = [
+  {
+    rimA: 0x38bdf8,
+    rimB: 0x818cf8,
+    edge: 0x7dd3fc,
+    rimLight: 0x38bdf8,
+    halo: 0x38bdf8,
+  },
+  {
+    rimA: 0xa855f7,
+    rimB: 0x38bdf8,
+    edge: 0xc4b5fd,
+    rimLight: 0xa855f7,
+    halo: 0x8b5cf6,
+  },
+  {
+    rimA: 0xfbbf24,
+    rimB: 0x38bdf8,
+    edge: 0xfde68a,
+    rimLight: 0xf59e0b,
+    halo: 0xfbbf24,
+  },
+] as const;
+
 function createBokehTexture(): THREE.CanvasTexture | null {
   if (typeof document === "undefined") return null;
   const canvas = document.createElement("canvas");
@@ -15,8 +43,8 @@ function createBokehTexture(): THREE.CanvasTexture | null {
 
   const grad = ctx.createRadialGradient(64, 64, 1, 64, 64, 62);
   grad.addColorStop(0, "rgba(255, 255, 255, 1)");
-  grad.addColorStop(0.25, "rgba(224, 231, 255, 0.85)");
-  grad.addColorStop(0.55, "rgba(99, 102, 241, 0.28)");
+  grad.addColorStop(0.28, "rgba(224, 231, 255, 0.8)");
+  grad.addColorStop(0.6, "rgba(99, 102, 241, 0.24)");
   grad.addColorStop(1, "rgba(0, 0, 0, 0)");
 
   ctx.clearRect(0, 0, 128, 128);
@@ -30,8 +58,19 @@ function createBokehTexture(): THREE.CanvasTexture | null {
   return texture;
 }
 
-export default function ThreeHeroScene() {
+export default function ThreeHeroScene({
+  activeChapter = 0,
+}: ThreeHeroSceneProps) {
   const containerRef = useRef<HTMLDivElement>(null);
+  const activeChapterRef = useRef<0 | 1 | 2>(activeChapter);
+  const pulseTriggerRef = useRef(0);
+
+  useEffect(() => {
+    if (activeChapterRef.current !== activeChapter) {
+      activeChapterRef.current = activeChapter;
+      pulseTriggerRef.current = 1;
+    }
+  }, [activeChapter]);
 
   useEffect(() => {
     const container = containerRef.current;
@@ -52,15 +91,17 @@ export default function ThreeHeroScene() {
       return;
     }
 
-    const isMobile = window.innerWidth < 768;
-    const width = container.clientWidth || window.innerWidth;
-    const height = container.clientHeight || window.innerHeight;
+    const initialW = container.clientWidth || window.innerWidth;
+    const initialH = container.clientHeight || window.innerHeight;
+    const isInitialMobile = initialW < 1024;
 
-    renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, isMobile ? 1.4 : 2));
-    renderer.setSize(width, height);
+    renderer.setPixelRatio(
+      Math.min(window.devicePixelRatio || 1, isInitialMobile ? 1.35 : 2)
+    );
+    renderer.setSize(initialW, initialH);
     renderer.setClearColor(0x000000, 0);
     renderer.toneMapping = THREE.ACESFilmicToneMapping;
-    renderer.toneMappingExposure = 1.25;
+    renderer.toneMappingExposure = 1.28;
     renderer.domElement.style.display = "block";
     renderer.domElement.style.width = "100%";
     renderer.domElement.style.height = "100%";
@@ -71,32 +112,35 @@ export default function ThreeHeroScene() {
 
     const scene = new THREE.Scene();
 
-    // Studio IBL environment map so metallic & glass 3D surfaces have true reflections
     const pmremGenerator = new THREE.PMREMGenerator(renderer);
     const roomEnv = new RoomEnvironment();
     const envRT = pmremGenerator.fromScene(roomEnv, 0.04);
     scene.environment = envRT.texture;
-    scene.environmentIntensity = 0.72;
+    scene.environmentIntensity = 0.76;
 
-    const camera = new THREE.PerspectiveCamera(42, width / height, 0.1, 100);
-    camera.position.set(0, 0.15, isMobile ? 9.4 : 7.5);
+    const camera = new THREE.PerspectiveCamera(
+      42,
+      initialW / initialH,
+      0.1,
+      100
+    );
 
-    // Dramatic 3-point key, rim & fill lighting
-    const keyLight = new THREE.DirectionalLight(0xe0e7ff, 2.8);
+    // 3-point lighting with reactive secondary stage accent
+    const keyLight = new THREE.DirectionalLight(0xe0e7ff, 2.7);
     keyLight.position.set(5, 6, 5);
     scene.add(keyLight);
 
     const cyanRim = new THREE.PointLight(0x38bdf8, 22, 22);
-    cyanRim.position.set(-4.5, 2.5, 2.5);
+    cyanRim.position.set(-4.0, 2.4, 2.8);
     scene.add(cyanRim);
 
-    const violetRim = new THREE.PointLight(0xa855f7, 24, 24);
-    violetRim.position.set(4.5, -2.5, 2.5);
-    scene.add(violetRim);
+    const reactiveRim = new THREE.PointLight(0x8b5cf6, 26, 24);
+    reactiveRim.position.set(4.5, -2.2, 2.8);
+    scene.add(reactiveRim);
 
-    const goldAccent = new THREE.PointLight(0xfbbf24, 14, 18);
-    goldAccent.position.set(1.5, 4.2, -3);
-    scene.add(goldAccent);
+    const topAccent = new THREE.PointLight(0xfbbf24, 12, 18);
+    topAccent.position.set(1.5, 4.2, -2.5);
+    scene.add(topAccent);
 
     const disposableGeos: THREE.BufferGeometry[] = [];
     const disposableMats: THREE.Material[] = [];
@@ -105,19 +149,62 @@ export default function ThreeHeroScene() {
     const bokehTex = createBokehTexture();
     if (bokehTex) disposableTextures.push(bokehTex);
 
-    // Master hero sculpture positioned on the right on desktop
+    const layoutTarget = {
+      baseX: 2.6,
+      baseY: 0.15,
+      scale: 0.96,
+      isMobile: isInitialMobile,
+    };
+
+    const updateHeroLayout = (w: number, h: number) => {
+      const mobile = w < 1024;
+      layoutTarget.isMobile = mobile;
+
+      camera.aspect = w / h;
+      camera.position.z = mobile ? 9.6 : 8.2;
+      camera.updateProjectionMatrix();
+      renderer?.setSize(w, h);
+
+      const halfH =
+        Math.tan(((camera.fov * Math.PI) / 180) * 0.5) * camera.position.z;
+      const halfW = halfH * camera.aspect;
+
+      if (mobile) {
+        layoutTarget.baseX = 0;
+        layoutTarget.baseY = 1.05;
+        layoutTarget.scale = Math.min(0.84, Math.max(0.56, halfW / 3.4));
+      } else {
+        // Keep the entire 3D sculpture & satellites cleanly inside the right column
+        // so orbiting rings never collide with left-hand typography.
+        const rightCenter = halfW * 0.52;
+        const maxAllowedRadius = Math.max(1.5, halfW * 0.44);
+        const targetScale = Math.min(
+          1.0,
+          Math.max(0.68, maxAllowedRadius / 2.38)
+        );
+        layoutTarget.baseX = Math.max(rightCenter, maxAllowedRadius + 0.22);
+        layoutTarget.baseY = 0.18;
+        layoutTarget.scale = targetScale;
+      }
+    };
+
+    // Master hero sculpture container
     const heroGroup = new THREE.Group();
-    heroGroup.position.set(isMobile ? 0 : 2.35, isMobile ? 0.55 : 0.0, 0);
     scene.add(heroGroup);
 
-    // 1. Custom GLSL Fresnel + Animated Energy Core Sphere (deep obsidian center, blazing rim)
-    const coreGeo = new THREE.SphereGeometry(0.92, 64, 64);
+    updateHeroLayout(initialW, initialH);
+    heroGroup.position.set(layoutTarget.baseX, layoutTarget.baseY, 0);
+    heroGroup.scale.setScalar(layoutTarget.scale);
+
+    // 1. Custom GLSL Fresnel + Animated Energy Core Sphere
+    const coreGeo = new THREE.SphereGeometry(0.86, 64, 64);
     const coreShaderMat = new THREE.ShaderMaterial({
       uniforms: {
         uTime: { value: 0 },
-        uInnerColor: { value: new THREE.Color(0x070a1c) },
-        uRimColorA: { value: new THREE.Color(0x38bdf8) },
-        uRimColorB: { value: new THREE.Color(0xa855f7) },
+        uPulse: { value: 0 },
+        uInnerColor: { value: new THREE.Color(0x060919) },
+        uRimColorA: { value: new THREE.Color(CHAPTER_THEMES[0].rimA) },
+        uRimColorB: { value: new THREE.Color(CHAPTER_THEMES[0].rimB) },
       },
       vertexShader: `
         varying vec3 vNormal;
@@ -133,6 +220,7 @@ export default function ThreeHeroScene() {
       `,
       fragmentShader: `
         uniform float uTime;
+        uniform float uPulse;
         uniform vec3 uInnerColor;
         uniform vec3 uRimColorA;
         uniform vec3 uRimColorB;
@@ -142,11 +230,11 @@ export default function ThreeHeroScene() {
 
         void main() {
           float ndotv = clamp(dot(normalize(vNormal), normalize(vViewDir)), 0.0, 1.0);
-          float fresnel = pow(1.0 - ndotv, 2.6);
-          float band = 0.5 + 0.5 * sin(vLocalPos.y * 5.0 - uTime * 1.4 + vLocalPos.x * 3.0);
-          vec3 rim = mix(uRimColorA, uRimColorB, band);
-          float coreGlow = 0.12 * smoothstep(0.4, 1.0, band) * (1.0 - ndotv);
-          vec3 finalColor = mix(uInnerColor, rim, clamp(fresnel * 1.18 + coreGlow, 0.0, 1.0));
+          float fresnel = pow(1.0 - ndotv, 2.45);
+          float wave = 0.5 + 0.5 * sin(vLocalPos.y * 5.2 - uTime * 1.65 + vLocalPos.x * 3.1);
+          vec3 rim = mix(uRimColorA, uRimColorB, wave);
+          float innerGlow = (0.14 + uPulse * 0.22) * smoothstep(0.35, 1.0, wave) * (1.0 - ndotv);
+          vec3 finalColor = mix(uInnerColor, rim, clamp(fresnel * (1.16 + uPulse * 0.25) + innerGlow, 0.0, 1.0));
           gl_FragColor = vec4(finalColor, 1.0);
         }
       `,
@@ -156,17 +244,31 @@ export default function ThreeHeroScene() {
     disposableGeos.push(coreGeo);
     disposableMats.push(coreShaderMat);
 
-    // 2. Sculpted Glass Geodesic Shell around the core (glossy translucent facets + crisp brushed metal edge cage)
-    const shellGeo = new THREE.IcosahedronGeometry(1.36, 1);
+    // Optical center halo sprite
+    const haloMat = new THREE.SpriteMaterial({
+      map: bokehTex ?? undefined,
+      color: CHAPTER_THEMES[0].halo,
+      transparent: true,
+      opacity: 0.42,
+      blending: THREE.AdditiveBlending,
+      depthWrite: false,
+    });
+    const coreHalo = new THREE.Sprite(haloMat);
+    coreHalo.scale.set(4.1, 4.1, 1);
+    heroGroup.add(coreHalo);
+    disposableMats.push(haloMat);
+
+    // 2. Geodesic Glass Crystal Cage
+    const shellGeo = new THREE.IcosahedronGeometry(1.26, 1);
     const shellGlassMat = new THREE.MeshPhysicalMaterial({
       color: 0x1e1b4b,
-      metalness: 0.15,
+      metalness: 0.16,
       roughness: 0.08,
       clearcoat: 1.0,
       clearcoatRoughness: 0.06,
       reflectivity: 1.0,
       transparent: true,
-      opacity: 0.24,
+      opacity: 0.22,
       side: THREE.FrontSide,
       depthWrite: false,
     });
@@ -175,61 +277,66 @@ export default function ThreeHeroScene() {
 
     const shellEdgesGeo = new THREE.EdgesGeometry(shellGeo);
     const shellEdgesMat = new THREE.LineBasicMaterial({
-      color: 0x93c5fd,
+      color: CHAPTER_THEMES[0].edge,
       transparent: true,
-      opacity: 0.45,
+      opacity: 0.5,
     });
     const shellEdges = new THREE.LineSegments(shellEdgesGeo, shellEdgesMat);
     shellMesh.add(shellEdges);
     disposableGeos.push(shellGeo, shellEdgesGeo);
     disposableMats.push(shellGlassMat, shellEdgesMat);
 
-    // 3. True 3D Sculpted Metallic Gimbal Rings (real 3D tubular thickness + specular studio shine)
+    // 3. Precision Metallic Gimbal Rings (tighter cohesive proportions)
     const ringDefs = [
       {
-        radius: 1.88,
-        tube: 0.036,
+        radius: 1.62,
+        tube: 0.032,
         color: 0x1e293b,
         emissive: 0x0284c7,
         accentColor: 0x38bdf8,
-        rotX: 1.05,
-        rotY: 0.42,
-        speedX: 0.0,
-        speedY: 0.28,
-        speedZ: 0.36,
+        rotX: 1.04,
+        rotY: 0.4,
+        speedX: 0.06,
+        speedY: 0.34,
+        speedZ: 0.44,
       },
       {
-        radius: 2.24,
-        tube: 0.03,
+        radius: 1.92,
+        tube: 0.026,
         color: 0x1e1b4b,
         emissive: 0x7c3aed,
         accentColor: 0xc084fc,
         rotX: -0.78,
         rotY: 0.85,
-        speedX: 0.18,
-        speedY: -0.22,
-        speedZ: -0.28,
+        speedX: 0.22,
+        speedY: -0.26,
+        speedZ: -0.34,
       },
       {
-        radius: 2.62,
-        tube: 0.024,
+        radius: 2.2,
+        tube: 0.021,
         color: 0x1e293b,
         emissive: 0xd97706,
         accentColor: 0xfbbf24,
-        rotX: 0.48,
-        rotY: -0.92,
-        speedX: -0.14,
-        speedY: 0.18,
-        speedZ: 0.22,
+        rotX: 0.46,
+        rotY: -0.88,
+        speedX: -0.16,
+        speedY: 0.22,
+        speedZ: 0.28,
       },
     ];
 
     const ringItems: {
       group: THREE.Group;
+      baseX: number;
+      baseY: number;
       speedX: number;
       speedY: number;
       speedZ: number;
     }[] = [];
+
+    const ringNodeGeo = new RoundedBoxGeometry(0.11, 0.11, 0.11, 3, 0.024);
+    disposableGeos.push(ringNodeGeo);
 
     ringDefs.forEach((def) => {
       const rGroup = new THREE.Group();
@@ -239,59 +346,58 @@ export default function ThreeHeroScene() {
       const torusMat = new THREE.MeshPhysicalMaterial({
         color: def.color,
         emissive: def.emissive,
-        emissiveIntensity: 0.3,
+        emissiveIntensity: 0.34,
         metalness: 0.92,
         roughness: 0.16,
         clearcoat: 1.0,
         clearcoatRoughness: 0.1,
       });
-      const torus = new THREE.Mesh(torusGeo, torusMat);
-      rGroup.add(torus);
+      rGroup.add(new THREE.Mesh(torusGeo, torusMat));
 
-      // Luminous accent arc node riding on each 3D gimbal ring
-      const nodeGeo = new RoundedBoxGeometry(0.14, 0.14, 0.14, 3, 0.03);
       const nodeMat = new THREE.MeshStandardMaterial({
         color: def.accentColor,
         emissive: def.accentColor,
-        emissiveIntensity: 1.15,
+        emissiveIntensity: 1.25,
         metalness: 0.4,
-        roughness: 0.2,
+        roughness: 0.18,
       });
-      const nodeA = new THREE.Mesh(nodeGeo, nodeMat);
+      const nodeA = new THREE.Mesh(ringNodeGeo, nodeMat);
       nodeA.position.set(def.radius, 0, 0);
       rGroup.add(nodeA);
 
-      const nodeB = new THREE.Mesh(nodeGeo, nodeMat);
+      const nodeB = new THREE.Mesh(ringNodeGeo, nodeMat);
       nodeB.position.set(-def.radius, 0, 0);
       rGroup.add(nodeB);
 
-      disposableGeos.push(torusGeo, nodeGeo);
+      disposableGeos.push(torusGeo);
       disposableMats.push(torusMat, nodeMat);
       heroGroup.add(rGroup);
       ringItems.push({
         group: rGroup,
+        baseX: def.rotX,
+        baseY: def.rotY,
         speedX: def.speedX,
         speedY: def.speedY,
         speedZ: def.speedZ,
       });
     });
 
-    // 4. Floating 3D Beveled Architectural Satellites orbiting at varied Z depths
-    const satelliteCount = isMobile ? 5 : 8;
-    const satGeo = new RoundedBoxGeometry(0.24, 0.24, 0.24, 4, 0.045);
+    // 4. Sleek Orbiting Sapphire Micro-Crystals (compact & luminous, never clunky)
+    const satelliteCount = isInitialMobile ? 4 : 6;
+    const satGeo = new THREE.OctahedronGeometry(0.13, 0);
     const satGlassMat = new THREE.MeshPhysicalMaterial({
       color: 0x312e81,
       emissive: 0x38bdf8,
-      emissiveIntensity: 0.22,
+      emissiveIntensity: 0.45,
       metalness: 0.85,
-      roughness: 0.12,
+      roughness: 0.1,
       clearcoat: 1.0,
     });
     const satEdgesGeo = new THREE.EdgesGeometry(satGeo);
     const satEdgesMat = new THREE.LineBasicMaterial({
-      color: 0x7dd3fc,
+      color: 0xe0f2fe,
       transparent: true,
-      opacity: 0.55,
+      opacity: 0.72,
     });
     disposableGeos.push(satGeo, satEdgesGeo);
     disposableMats.push(satGlassMat, satEdgesMat);
@@ -308,22 +414,22 @@ export default function ThreeHeroScene() {
     for (let i = 0; i < satelliteCount; i++) {
       const mesh = new THREE.Mesh(satGeo, satGlassMat);
       mesh.add(new THREE.LineSegments(satEdgesGeo, satEdgesMat));
-      const scale = 0.72 + (i % 3) * 0.22;
+      const scale = 0.78 + (i % 3) * 0.18;
       mesh.scale.setScalar(scale);
       heroGroup.add(mesh);
 
       satellites.push({
         mesh,
-        radius: 2.05 + (i % 4) * 0.36,
+        radius: 1.72 + (i % 3) * 0.28, // max radius = 2.28 (cleanly inside right bounds)
         angleOffset: (i / satelliteCount) * Math.PI * 2,
-        speed: 0.28 + (i % 3) * 0.1,
-        yAmp: 0.55 + (i % 2) * 0.45,
-        tilt: (i % 2 === 0 ? 1 : -1) * (0.3 + i * 0.08),
+        speed: 0.36 + (i % 3) * 0.12,
+        yAmp: 0.55 + (i % 2) * 0.35,
+        tilt: (i % 2 === 0 ? 1 : -1) * (0.4 + i * 0.1),
       });
     }
 
-    // 5. Soft depth bokeh starfield (circular particles, zero square artifacts)
-    const starCount = isMobile ? 280 : 720;
+    // 5. Soft bokeh depth starfield
+    const starCount = isInitialMobile ? 240 : 640;
     const starPos = new Float32Array(starCount * 3);
     const starColors = new Float32Array(starCount * 3);
     const palette = [
@@ -349,11 +455,11 @@ export default function ThreeHeroScene() {
     starGeo.setAttribute("color", new THREE.BufferAttribute(starColors, 3));
 
     const starMat = new THREE.PointsMaterial({
-      size: isMobile ? 0.13 : 0.11,
+      size: isInitialMobile ? 0.12 : 0.105,
       map: bokehTex ?? undefined,
       vertexColors: true,
       transparent: true,
-      opacity: 0.78,
+      opacity: 0.72,
       alphaTest: 0.02,
       depthWrite: false,
       blending: THREE.AdditiveBlending,
@@ -392,7 +498,10 @@ export default function ThreeHeroScene() {
         dragState.velY = dx * 0.008;
         dragState.velX = dy * 0.006;
         dragState.rotY += dragState.velY;
-        dragState.rotX = Math.max(-0.85, Math.min(0.85, dragState.rotX + dragState.velX));
+        dragState.rotX = Math.max(
+          -0.85,
+          Math.min(0.85, dragState.rotX + dragState.velX)
+        );
       }
     };
 
@@ -412,62 +521,117 @@ export default function ThreeHeroScene() {
 
     canvasEl.style.cursor = "grab";
     canvasEl.addEventListener("pointerdown", handleCanvasPointerDown);
-    window.addEventListener("pointermove", handleWindowPointerMove, { passive: true });
+    window.addEventListener("pointermove", handleWindowPointerMove, {
+      passive: true,
+    });
     window.addEventListener("pointerup", handleWindowPointerUp);
 
     const handleResize = () => {
-      if (!container || !renderer) return;
+      if (!container) return;
       const w = container.clientWidth || window.innerWidth;
       const h = container.clientHeight || window.innerHeight;
-      camera.aspect = w / h;
-      camera.updateProjectionMatrix();
-      renderer.setSize(w, h);
+      updateHeroLayout(w, h);
     };
 
     const resizeObserver = new ResizeObserver(handleResize);
     resizeObserver.observe(container);
+
+    const targetRimA = new THREE.Color();
+    const targetRimB = new THREE.Color();
+    const targetEdgeCol = new THREE.Color();
+    const targetLightCol = new THREE.Color();
+    const targetHaloCol = new THREE.Color();
 
     let frameId = 0;
     const startTime = performance.now();
 
     const renderFrame = () => {
       const elapsed = (performance.now() - startTime) * 0.001;
+      const theme =
+        CHAPTER_THEMES[activeChapterRef.current] ?? CHAPTER_THEMES[0];
 
       pointer.x += (pointer.targetX - pointer.x) * 0.05;
       pointer.y += (pointer.targetY - pointer.y) * 0.05;
 
+      // Smoothly decay stage-switch pulse wave
+      pulseTriggerRef.current *= 0.945;
+      const pulse = pulseTriggerRef.current;
+
+      // Color morphing toward active chapter
+      targetRimA.setHex(theme.rimA);
+      targetRimB.setHex(theme.rimB);
+      targetEdgeCol.setHex(theme.edge);
+      targetLightCol.setHex(theme.rimLight);
+      targetHaloCol.setHex(theme.halo);
+
+      coreShaderMat.uniforms.uTime.value = elapsed;
+      coreShaderMat.uniforms.uPulse.value = pulse;
+      coreShaderMat.uniforms.uRimColorA.value.lerp(targetRimA, 0.045);
+      coreShaderMat.uniforms.uRimColorB.value.lerp(targetRimB, 0.045);
+      shellEdgesMat.color.lerp(targetEdgeCol, 0.045);
+      reactiveRim.color.lerp(targetLightCol, 0.045);
+      haloMat.color.lerp(targetHaloCol, 0.045);
+
       if (!dragState.isDragging) {
         dragState.rotY += dragState.velY;
-        dragState.rotX = Math.max(-0.85, Math.min(0.85, dragState.rotX + dragState.velX));
+        dragState.rotX = Math.max(
+          -0.85,
+          Math.min(0.85, dragState.rotX + dragState.velX)
+        );
         dragState.velY *= 0.94;
         dragState.velX *= 0.94;
       }
 
-      coreShaderMat.uniforms.uTime.value = elapsed;
+      // Automated camera subtle breathing & parallax drift
+      camera.position.x += (pointer.x * 0.24 - camera.position.x) * 0.04;
+      camera.position.y +=
+        (0.12 + pointer.y * 0.16 + Math.sin(elapsed * 0.45) * 0.08 - camera.position.y) *
+        0.04;
 
-      heroGroup.rotation.y = elapsed * 0.14 + pointer.x * 0.25 + dragState.rotY;
-      heroGroup.rotation.x = Math.sin(elapsed * 0.24) * 0.08 - pointer.y * 0.18 + dragState.rotX;
-      heroGroup.position.y = (isMobile ? 0.55 : 0.0) + Math.sin(elapsed * 0.9) * 0.11;
+      // Smoothly maintain non-overlapping sculpture placement + gentle hover bob
+      heroGroup.position.x += (layoutTarget.baseX - heroGroup.position.x) * 0.08;
+      const bobY = layoutTarget.baseY + Math.sin(elapsed * 0.95) * 0.1;
+      heroGroup.position.y += (bobY - heroGroup.position.y) * 0.08;
 
-      shellMesh.rotation.y = -elapsed * 0.18;
-      shellMesh.rotation.z = elapsed * 0.11;
+      const breathScale =
+        layoutTarget.scale * (1 + Math.sin(elapsed * 1.1) * 0.014 + pulse * 0.045);
+      heroGroup.scale.setScalar(
+        heroGroup.scale.x + (breathScale - heroGroup.scale.x) * 0.09
+      );
 
-      ringItems.forEach((item) => {
-        item.group.rotation.z += item.speedZ * 0.007;
-        item.group.rotation.y += item.speedY * 0.003;
+      heroGroup.rotation.y = elapsed * 0.16 + pointer.x * 0.22 + dragState.rotY;
+      heroGroup.rotation.x =
+        Math.sin(elapsed * 0.28) * 0.09 - pointer.y * 0.16 + dragState.rotX;
+
+      shellMesh.rotation.y = -elapsed * 0.2;
+      shellMesh.rotation.z = elapsed * 0.12;
+      const shellPulse = 1 + pulse * 0.06;
+      shellMesh.scale.setScalar(shellPulse);
+
+      const haloScale = 4.0 + Math.sin(elapsed * 1.4) * 0.25 + pulse * 0.7;
+      coreHalo.scale.set(haloScale, haloScale, 1);
+      haloMat.opacity = 0.36 + pulse * 0.18;
+
+      const pulseBoost = 1 + pulse * 2.2;
+      ringItems.forEach((item, idx) => {
+        item.group.rotation.z += item.speedZ * 0.008 * pulseBoost;
+        item.group.rotation.y =
+          item.baseY + elapsed * item.speedY * 0.35 + Math.sin(elapsed * 0.5 + idx) * 0.08;
+        item.group.rotation.x =
+          item.baseX + Math.cos(elapsed * 0.45 + idx) * 0.08;
       });
 
       satellites.forEach((sat, idx) => {
-        const theta = elapsed * sat.speed + sat.angleOffset;
+        const theta = elapsed * sat.speed * (1 + pulse * 0.4) + sat.angleOffset;
         sat.mesh.position.x = Math.cos(theta) * sat.radius;
         sat.mesh.position.z = Math.sin(theta) * sat.radius;
         sat.mesh.position.y = Math.sin(theta + sat.tilt) * sat.yAmp;
-        sat.mesh.rotation.x = elapsed * 0.6 + idx;
-        sat.mesh.rotation.y = elapsed * 0.8;
+        sat.mesh.rotation.x = elapsed * 0.7 + idx;
+        sat.mesh.rotation.y = elapsed * 0.9;
       });
 
-      starField.rotation.y = elapsed * 0.012 + pointer.x * 0.04;
-      starField.rotation.x = pointer.y * 0.03;
+      starField.rotation.y = elapsed * 0.014 + pointer.x * 0.035;
+      starField.rotation.x = pointer.y * 0.025;
 
       renderer?.render(scene, camera);
 
@@ -507,11 +671,7 @@ export default function ThreeHeroScene() {
     <div className="pointer-events-auto absolute inset-0 h-full w-full overflow-hidden">
       <div
         aria-hidden="true"
-        className="pointer-events-none animate-pulse-slow absolute right-[10%] top-[18%] h-72 w-72 rounded-full bg-indigo-500/15 blur-3xl"
-      />
-      <div
-        aria-hidden="true"
-        className="pointer-events-none animate-pulse-slow absolute left-[15%] bottom-[20%] h-64 w-64 rounded-full bg-sky-500/10 blur-3xl"
+        className="pointer-events-none animate-pulse-slow absolute right-[8%] top-[18%] h-80 w-80 rounded-full bg-[radial-gradient(circle,rgba(99,102,241,0.16)_0%,transparent_70%)]"
       />
       <div ref={containerRef} className="relative h-full w-full" />
     </div>

@@ -10,10 +10,13 @@ import PageHeader from "@/components/ui/PageHeader";
 import { ABOUT_DATA, SITE_CONFIG } from "@/data/journeyData";
 import {
   ArrowRight,
+  Calendar,
   Compass,
   Cpu,
+  Globe2,
   GraduationCap,
   HeartHandshake,
+  Laptop,
   MapPin,
   Rocket,
   Sparkles,
@@ -36,21 +39,24 @@ export default function AboutContent() {
         {/* Profile Overview & Portrait */}
         <FadeInSection>
           <div className="glass-panel grid gap-8 rounded-3xl p-6 sm:p-10 lg:grid-cols-[0.95fr_1.35fr] lg:items-center">
-            <div className="overflow-hidden rounded-2xl border border-white/10">
+            <div className="overflow-hidden rounded-2xl border border-sky-400/25 shadow-[0_18px_50px_rgba(14,165,233,0.16)]">
               <MemoryPhoto
                 slotId="about-portrait"
                 src={ABOUT_DATA.portraitImage}
-                alt="Student Portrait"
-                placeholderTitle="Your Portrait Photo"
-                aspect="portrait"
+                alt="Khorn Ream Portrait"
+                placeholderTitle="Khorn Ream"
+                aspect="square"
+                naturalAspect="square"
+                objectPosition="top"
+                priority
               />
             </div>
 
-            <div className="space-y-6">
-              <div className="flex flex-wrap gap-2.5">
+            <div className="space-y-5">
+              <div className="flex flex-wrap gap-2">
                 <span className="inline-flex items-center gap-1.5 rounded-full border border-sky-400/30 bg-sky-500/10 px-3 py-1 font-mono text-xs text-sky-200">
                   <User className="h-3.5 w-3.5" />
-                  <span>{SITE_CONFIG.studentName}</span>
+                  <span>{SITE_CONFIG.studentName} ({SITE_CONFIG.nickname})</span>
                 </span>
                 <span className="inline-flex items-center gap-1.5 rounded-full border border-violet-400/30 bg-violet-500/10 px-3 py-1 font-mono text-xs text-violet-200">
                   <MapPin className="h-3.5 w-3.5" />
@@ -64,16 +70,64 @@ export default function AboutContent() {
 
               <div>
                 <h2 className="font-[family-name:var(--font-display)] text-2xl font-bold text-white sm:text-3xl">
-                  Hello, I’m a PNC IT Student & Aspiring Software Engineer
+                  Hello, I’m Khorn Ream (Ream)
                 </h2>
                 <p className="mt-3 text-sm leading-relaxed text-slate-300 sm:text-base">
                   {ABOUT_DATA.whoIAm}
                 </p>
               </div>
 
+              {/* Verified Personal Profile Snapshot */}
+              <div className="grid gap-2.5 sm:grid-cols-2">
+                <div className="flex items-center gap-2.5 rounded-xl border border-white/10 bg-white/[0.03] px-3.5 py-2.5 text-xs">
+                  <Calendar className="h-4 w-4 shrink-0 text-sky-400" />
+                  <div>
+                    <span className="block text-[10px] font-mono uppercase tracking-wider text-slate-400">
+                      Date of Birth
+                    </span>
+                    <span className="font-medium text-white">
+                      {SITE_CONFIG.dateOfBirth} • Age 20
+                    </span>
+                  </div>
+                </div>
+                <div className="flex items-center gap-2.5 rounded-xl border border-white/10 bg-white/[0.03] px-3.5 py-2.5 text-xs">
+                  <Globe2 className="h-4 w-4 shrink-0 text-emerald-400" />
+                  <div>
+                    <span className="block text-[10px] font-mono uppercase tracking-wider text-slate-400">
+                      Nationality & Base
+                    </span>
+                    <span className="font-medium text-white">
+                      {SITE_CONFIG.nationality} • {SITE_CONFIG.currentLocation}
+                    </span>
+                  </div>
+                </div>
+                <div className="flex items-center gap-2.5 rounded-xl border border-white/10 bg-white/[0.03] px-3.5 py-2.5 text-xs">
+                  <GraduationCap className="h-4 w-4 shrink-0 text-violet-400" />
+                  <div>
+                    <span className="block text-[10px] font-mono uppercase tracking-wider text-slate-400">
+                      Education
+                    </span>
+                    <span className="font-medium text-white">
+                      {SITE_CONFIG.programFocus}
+                    </span>
+                  </div>
+                </div>
+                <div className="flex items-center gap-2.5 rounded-xl border border-white/10 bg-white/[0.03] px-3.5 py-2.5 text-xs">
+                  <Laptop className="h-4 w-4 shrink-0 text-amber-400" />
+                  <div>
+                    <span className="block text-[10px] font-mono uppercase tracking-wider text-slate-400">
+                      Main Interest
+                    </span>
+                    <span className="font-medium text-white">
+                      {SITE_CONFIG.mainInterest}
+                    </span>
+                  </div>
+                </div>
+              </div>
+
               <div className="rounded-2xl border border-white/10 bg-white/[0.03] p-5">
                 <h3 className="font-[family-name:var(--font-display)] text-base font-semibold text-sky-200">
-                  Background & Hometown in Cambodia
+                  Background & Hometown — Kampong Thom Province
                 </h3>
                 <p className="mt-2 text-sm leading-relaxed text-slate-300">
                   {ABOUT_DATA.backgroundAndHometown}
@@ -93,20 +147,32 @@ export default function AboutContent() {
                   <span>Personality & Interests</span>
                 </div>
                 <h2 className="mt-4 font-[family-name:var(--font-display)] text-2xl font-bold text-white">
-                  What Drives Me Every Day
+                  What Shapes My Growth at PNC
                 </h2>
                 <p className="mt-3 text-sm leading-relaxed text-slate-300 sm:text-base">
                   {ABOUT_DATA.personalityAndInterests}
                 </p>
+                <div className="mt-5 flex flex-wrap gap-2">
+                  {ABOUT_DATA.holisticPillars.map((pillar) => (
+                    <span
+                      key={pillar}
+                      className="rounded-full border border-indigo-400/25 bg-indigo-500/10 px-3 py-1 text-xs font-medium text-indigo-200"
+                    >
+                      {pillar}
+                    </span>
+                  ))}
+                </div>
               </div>
 
-              <div className="overflow-hidden rounded-3xl border border-white/10">
+              <div className="overflow-hidden rounded-3xl border border-white/10 shadow-[0_16px_45px_rgba(15,23,42,0.7)]">
                 <MemoryPhoto
                   slotId="about-hometown-campus"
                   src={ABOUT_DATA.hometownImage}
                   alt="Hometown and Campus Memories"
                   placeholderTitle="Hometown / Campus Memory"
                   aspect="landscape"
+                  naturalAspect="landscape"
+                  objectPosition="top"
                 />
               </div>
             </div>

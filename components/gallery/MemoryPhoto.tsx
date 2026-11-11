@@ -17,6 +17,9 @@ interface MemoryPhotoProps {
   alt: string;
   placeholderTitle?: string;
   aspect?: "landscape" | "portrait" | "square";
+  naturalAspect?: "landscape" | "portrait" | "square";
+  objectPosition?: "top" | "center" | "bottom";
+  priority?: boolean;
   mediaType?: "image" | "video";
   videoSrc?: string;
   allowLocalPreview?: boolean;
@@ -30,6 +33,9 @@ export default function MemoryPhoto({
   alt,
   placeholderTitle,
   aspect = "landscape",
+  naturalAspect,
+  objectPosition = "top",
+  priority = false,
   mediaType = "image",
   videoSrc,
   allowLocalPreview = true,
@@ -69,10 +75,17 @@ export default function MemoryPhoto({
 
   const aspectClass =
     aspect === "portrait"
-      ? "aspect-[4/5]"
+      ? "aspect-[3/4]"
       : aspect === "square"
       ? "aspect-square"
-      : "aspect-[16/10]";
+      : "aspect-[4/3]";
+
+  const focalClass =
+    objectPosition === "bottom"
+      ? "object-bottom"
+      : objectPosition === "center"
+      ? "object-center"
+      : "object-[50%_20%]";
 
   const handleFileChange = async (e: ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -98,10 +111,15 @@ export default function MemoryPhoto({
   const resolvedSrc = localPreview ? localPreview.dataUrl : videoSrc || src;
   const imgError = failedSrc === resolvedSrc;
   const showPlaceholder = !localPreview && (!src || imgError);
+  const useAmbientMatte =
+    !isPreviewVideo &&
+    !localPreview &&
+    aspect === "landscape" &&
+    naturalAspect === "portrait";
 
   return (
     <div
-      className={`relative overflow-hidden bg-slate-950/75 ${aspectClass} ${className}`}
+      className={`relative overflow-hidden bg-[#060919] ring-1 ring-inset ring-white/10 ${aspectClass} ${className}`}
     >
       {!showPlaceholder ? (
         <>
@@ -114,21 +132,48 @@ export default function MemoryPhoto({
               autoPlay
               className={`h-full w-full object-cover ${imgClassName}`}
             />
+          ) : useAmbientMatte ? (
+            <>
+              <Image
+                src={resolvedSrc}
+                alt=""
+                fill
+                unoptimized
+                aria-hidden="true"
+                sizes="(max-width: 768px) 100vw, 50vw"
+                className="scale-125 object-cover opacity-55 blur-2xl brightness-50 saturate-150"
+              />
+              <div
+                aria-hidden="true"
+                className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_50%_45%,transparent_30%,rgba(4,7,20,0.65)_100%)]"
+              />
+              <Image
+                src={resolvedSrc}
+                alt={alt}
+                fill
+                priority={priority}
+                unoptimized
+                sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+                onError={() => setFailedSrc(resolvedSrc)}
+                className={`object-contain p-1.5 drop-shadow-[0_14px_28px_rgba(0,0,0,0.75)] transition-transform duration-700 ease-out group-hover:scale-[1.03] ${imgClassName}`}
+              />
+            </>
           ) : (
             <Image
               src={resolvedSrc}
               alt={alt}
               fill
+              priority={priority}
               unoptimized
               sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
               onError={() => setFailedSrc(resolvedSrc)}
-              className={`object-cover transition-transform duration-700 ease-out group-hover:scale-105 ${imgClassName}`}
+              className={`object-cover ${focalClass} contrast-[1.02] saturate-[1.04] transition-transform duration-700 ease-out group-hover:scale-[1.04] ${imgClassName}`}
             />
           )}
 
           <div
             aria-hidden="true"
-            className="pointer-events-none absolute inset-0 bg-gradient-to-t from-[#040714]/85 via-transparent to-transparent opacity-75"
+            className="pointer-events-none absolute inset-0 bg-gradient-to-t from-[#040714]/50 via-transparent to-[#040714]/20 transition-opacity duration-300 group-hover:opacity-75"
           />
 
           {localPreview && (
@@ -149,7 +194,6 @@ export default function MemoryPhoto({
         </>
       ) : (
         <div className="cosmic-grid-bg relative flex h-full w-full flex-col items-center justify-center bg-gradient-to-br from-[#0b1230] via-[#060919] to-[#130d2e] p-6 text-center">
-          {/* Subtle architectural gallery corner reticles */}
           <span
             aria-hidden="true"
             className="pointer-events-none absolute left-3.5 top-3.5 h-3 w-3 border-l border-t border-white/20"

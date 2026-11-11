@@ -9,7 +9,7 @@ import {
   StaggerItem,
 } from "@/components/ui/MotionPrimitives";
 import { MEMORY_ITEMS, SITE_CONFIG } from "@/data/journeyData";
-import { motion } from "framer-motion";
+import { AnimatePresence, motion } from "framer-motion";
 import {
   ArrowRight,
   BookOpen,
@@ -20,20 +20,25 @@ import {
   Images,
   MapPin,
   PartyPopper,
+  Pause,
+  Play,
   Sparkles,
   Trophy,
   Users,
 } from "lucide-react";
 import dynamic from "next/dynamic";
 import Link from "next/link";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
-const ThreeHeroScene = dynamic(() => import("@/components/three/ThreeHeroScene"), {
-  ssr: false,
-  loading: () => (
-    <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_70%_40%,rgba(99,102,241,0.18),transparent_60%)]" />
-  ),
-});
+const ThreeHeroScene = dynamic(
+  () => import("@/components/three/ThreeHeroScene"),
+  {
+    ssr: false,
+    loading: () => (
+      <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_72%_45%,rgba(99,102,241,0.2),transparent_58%)]" />
+    ),
+  }
+);
 
 const CHAPTER_CARDS = [
   {
@@ -80,179 +85,461 @@ const CHAPTER_CARDS = [
   },
 ];
 
-const JOURNEY_PILLARS = [
-  { label: "Years of Growth", value: "02 Years", detail: "Year 1 Foundation → Year 2 Engineering" },
-  { label: "Cohort Community", value: "~25 Students", detail: "Diverse provinces across Cambodia" },
-  { label: "Destination", value: "Software Engineer", detail: "Building impactful technology" },
+const HERO_CHAPTERS: {
+  code: string;
+  label: string;
+  headline: string;
+  detail: string;
+  dotColor: string;
+  borderActive: string;
+  pillarLabel: string;
+  pillarValue: string;
+  pillarDetail: string;
+}[] = [
+  {
+    code: "01",
+    label: "Year 1 • Foundation",
+    headline: "Programming fundamentals, English & PNC life skills",
+    detail: "First steps into IT alongside ~25 classmates across Cambodia",
+    dotColor: "#38BDF8",
+    borderActive: "border-sky-400/45 shadow-[0_0_26px_rgba(56,189,248,0.2)]",
+    pillarLabel: "Years of Growth",
+    pillarValue: "02 Years",
+    pillarDetail: "PNC IT • Gen 2026",
+  },
+  {
+    code: "02",
+    label: "Year 2 • Full-Stack",
+    headline: "Full-stack web apps, teamwork, mentoring & company visits",
+    detail: "Turning curiosity into production-minded engineering projects",
+    dotColor: "#A855F7",
+    borderActive:
+      "border-violet-400/45 shadow-[0_0_26px_rgba(168,85,247,0.22)]",
+    pillarLabel: "Origin & Focus",
+    pillarValue: "Kampong Thom",
+    pillarDetail: "Full-Stack Web Dev",
+  },
+  {
+    code: "03",
+    label: "2026+ • Destination",
+    headline: "Growing into a dependable Software Engineer",
+    detail: "Building clean software that uplifts teams & communities",
+    dotColor: "#FBBF24",
+    borderActive:
+      "border-amber-400/45 shadow-[0_0_26px_rgba(251,191,36,0.2)]",
+    pillarLabel: "Career Goal",
+    pillarValue: "Software Engineer",
+    pillarDetail: "Phnom Penh • 2026+",
+  },
 ];
 
+const HERO_CYCLE_MS = 4800;
+
 export default function HomeExperience() {
-  const featuredMemories = MEMORY_ITEMS.filter((item) => item.featured);
+  const featuredMemories = MEMORY_ITEMS.filter((item) => item.featured).slice(
+    0,
+    6
+  );
   const [lightboxIndex, setLightboxIndex] = useState<number | null>(null);
+  const [heroChapter, setHeroChapter] = useState<0 | 1 | 2>(0);
+  const [heroAutoPlay, setHeroAutoPlay] = useState(true);
+  const [heroHoverPaused, setHeroHoverPaused] = useState(false);
+
+  const isAutomationRunning = heroAutoPlay && !heroHoverPaused;
+  const activeHeroMeta = HERO_CHAPTERS[heroChapter];
+
+  useEffect(() => {
+    if (!isAutomationRunning) return;
+    if (
+      typeof window !== "undefined" &&
+      window.matchMedia("(prefers-reduced-motion: reduce)").matches
+    ) {
+      return;
+    }
+
+    const timer = window.setInterval(() => {
+      setHeroChapter((prev) => ((prev + 1) % 3) as 0 | 1 | 2);
+    }, HERO_CYCLE_MS);
+
+    return () => window.clearInterval(timer);
+  }, [isAutomationRunning]);
 
   return (
     <div className="relative overflow-hidden">
-      {/* SECTION 1: 3D ANIMATED HERO */}
-      <section className="relative flex min-h-screen items-center pt-24 pb-16 sm:pt-28 sm:pb-24">
-        <ThreeHeroScene />
+      {/* SECTION 1: 3D ANIMATED & AUTOMATED HERO */}
+      <section className="relative flex min-h-screen items-center pt-24 pb-16 sm:pt-28 sm:pb-20">
+        <ThreeHeroScene activeChapter={heroChapter} />
 
-        {/* Ambient radial accents */}
+        {/* Subtle readability scrim balancing the left story zone with the 3D scene */}
         <div
           aria-hidden="true"
-          className="pointer-events-none absolute -left-24 top-28 h-80 w-80 rounded-full bg-indigo-600/20 blur-3xl"
-        />
-        <div
-          aria-hidden="true"
-          className="pointer-events-none absolute bottom-10 right-1/4 h-72 w-72 rounded-full bg-violet-600/15 blur-3xl"
+          className="pointer-events-none absolute inset-0 bg-[linear-gradient(180deg,rgba(3,6,20,0.48)_0%,rgba(3,6,20,0.22)_55%,rgba(3,6,20,0.68)_100%)] lg:bg-[radial-gradient(circle_at_24%_48%,rgba(3,6,20,0.62)_0%,rgba(3,6,20,0.24)_46%,transparent_72%)]"
         />
 
         <div className="pointer-events-none relative z-10 mx-auto w-full max-w-7xl px-4 sm:px-6 lg:px-8">
-          <div className="pointer-events-auto max-w-3xl">
-            <motion.div
-              initial={{ opacity: 0, y: 14 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.45 }}
-              className="inline-flex items-center gap-2 rounded-full border border-indigo-400/30 bg-indigo-500/15 px-4 py-1.5 backdrop-blur-md"
-            >
-              <Sparkles className="h-3.5 w-3.5 text-sky-300" />
-              <span className="font-mono text-xs uppercase tracking-widest text-indigo-100">
-                Passerelles Numériques Cambodia • Interactive Story
-              </span>
-            </motion.div>
-
-            <motion.h1
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.55, delay: 0.08 }}
-              className="mt-6 font-[family-name:var(--font-display)] text-5xl font-extrabold tracking-tight text-white sm:text-6xl lg:text-7xl"
-            >
-              <span className="text-gradient-hero">{SITE_CONFIG.heroTitle}</span>
-            </motion.h1>
-
-            <motion.p
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.55, delay: 0.16 }}
-              className="mt-4 font-[family-name:var(--font-display)] text-xl font-medium text-sky-200 sm:text-2xl"
-            >
-              {SITE_CONFIG.heroSubtitle}
-            </motion.p>
-
-            <motion.p
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.55, delay: 0.24 }}
-              className="mt-5 max-w-2xl text-base leading-relaxed text-slate-300 sm:text-lg"
-            >
-              {SITE_CONFIG.heroIntro}
-            </motion.p>
-
-            {/* Primary CTAs */}
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.55, delay: 0.32 }}
-              className="mt-8 flex flex-wrap items-center gap-4"
-            >
-              <Link
-                href="/journey"
-                className="group inline-flex items-center gap-2.5 rounded-2xl bg-gradient-to-r from-indigo-500 via-violet-500 to-sky-500 px-6 py-3.5 text-sm font-semibold text-white shadow-[0_10px_35px_rgba(99,102,241,0.45)] transition hover:scale-[1.02] hover:shadow-[0_14px_45px_rgba(139,92,246,0.55)]"
+          <div className="grid items-center gap-8 lg:grid-cols-[1.06fr_0.94fr]">
+            {/* LEFT COLUMN: Clean Non-Overlapping Editorial Story */}
+            <div className="pointer-events-auto lg:max-w-[590px]">
+              <motion.div
+                initial={{ opacity: 0, y: 14 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.45 }}
+                className="inline-flex items-center gap-2.5 rounded-full border border-indigo-400/30 bg-indigo-500/15 px-4 py-1.5 backdrop-blur-md"
               >
-                <Compass className="h-4 w-4" />
-                <span>Explore My Journey</span>
-                <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
-              </Link>
+                <span className="relative flex h-2 w-2">
+                  <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-sky-400 opacity-75" />
+                  <span className="relative inline-flex h-2 w-2 rounded-full bg-sky-300" />
+                </span>
+                <Sparkles className="h-3.5 w-3.5 text-sky-300" />
+                <span className="font-mono text-[11px] uppercase tracking-widest text-indigo-100 sm:text-xs">
+                  Passerelles Numériques Cambodia • Interactive Story
+                </span>
+              </motion.div>
 
-              <Link
-                href="/about"
-                className="inline-flex items-center gap-2.5 rounded-2xl border border-white/15 bg-white/[0.05] px-6 py-3.5 text-sm font-semibold text-white backdrop-blur-md transition hover:border-sky-400/50 hover:bg-white/[0.1]"
+              <motion.h1
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.55, delay: 0.08 }}
+                className="mt-5 font-[family-name:var(--font-display)] text-4xl font-extrabold tracking-tight text-white sm:text-6xl lg:text-[3.5rem] xl:text-[4.15rem]"
               >
-                <BookOpen className="h-4 w-4 text-sky-300" />
-                <span>Discover My Story</span>
-              </Link>
-            </motion.div>
+                <span className="text-gradient-hero">{SITE_CONFIG.heroTitle}</span>
+              </motion.h1>
 
-            {/* Quick pillars */}
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.6, delay: 0.4 }}
-              className="mt-12 grid gap-3.5 sm:grid-cols-3"
-            >
-              {JOURNEY_PILLARS.map((pillar) => (
-                <div
-                  key={pillar.label}
-                  className="glass-panel rounded-2xl px-4 py-3.5"
+              <motion.p
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.55, delay: 0.16 }}
+                className="mt-3.5 font-[family-name:var(--font-display)] text-lg font-medium leading-snug text-sky-200 sm:text-2xl lg:text-[1.35rem] xl:text-2xl"
+              >
+                {SITE_CONFIG.heroSubtitle}
+              </motion.p>
+
+              <motion.p
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.55, delay: 0.24 }}
+                className="mt-4 max-w-xl text-sm leading-relaxed text-slate-300 sm:text-base"
+              >
+                {SITE_CONFIG.heroIntro}
+              </motion.p>
+
+              {/* Primary CTAs */}
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.55, delay: 0.32 }}
+                className="mt-7 grid grid-cols-1 gap-3 sm:flex sm:flex-wrap sm:items-center sm:gap-4"
+              >
+                <Link
+                  href="/journey"
+                  className="group relative inline-flex w-full items-center justify-center gap-2.5 overflow-hidden rounded-2xl bg-gradient-to-r from-indigo-500 via-violet-500 to-sky-500 px-6 py-3.5 text-sm font-semibold text-white shadow-[0_10px_35px_rgba(99,102,241,0.45)] transition duration-300 active:scale-[0.98] hover:-translate-y-0.5 hover:shadow-[0_14px_45px_rgba(139,92,246,0.58)] sm:w-auto"
                 >
-                  <p className="font-mono text-[10px] uppercase tracking-widest text-slate-400">
-                    {pillar.label}
-                  </p>
-                  <p className="mt-1 font-[family-name:var(--font-display)] text-lg font-bold text-white">
-                    {pillar.value}
-                  </p>
-                  <p className="mt-0.5 text-xs text-slate-300">{pillar.detail}</p>
-                </div>
-              ))}
-            </motion.div>
-          </div>
-        </div>
+                  <span
+                    aria-hidden="true"
+                    className="pointer-events-none absolute inset-0 -translate-x-full bg-gradient-to-r from-transparent via-white/25 to-transparent transition-transform duration-700 group-hover:translate-x-full"
+                  />
+                  <Compass className="relative h-4 w-4" />
+                  <span className="relative">Explore My Journey</span>
+                  <ArrowRight className="relative h-4 w-4 transition-transform group-hover:translate-x-1" />
+                </Link>
 
-        {/* Subtle interactive 3D hint on desktop */}
-        <div
-          aria-hidden="true"
-          className="pointer-events-none absolute bottom-6 right-8 z-10 hidden items-center gap-2 rounded-full border border-white/10 bg-slate-950/60 px-3.5 py-1.5 font-mono text-[10px] uppercase tracking-widest text-slate-300 backdrop-blur-md lg:inline-flex"
-        >
-          <span className="h-1.5 w-1.5 rounded-full bg-sky-400 shadow-[0_0_8px_#38bdf8]" />
-          <span>Drag right 3D sculpture to rotate</span>
+                <Link
+                  href="/about"
+                  className="inline-flex w-full items-center justify-center gap-2.5 rounded-2xl border border-white/15 bg-white/[0.06] px-6 py-3.5 text-sm font-semibold text-white backdrop-blur-md transition duration-300 active:scale-[0.98] hover:-translate-y-0.5 hover:border-sky-400/50 hover:bg-white/[0.11] sm:w-auto"
+                >
+                  <BookOpen className="h-4 w-4 text-sky-300" />
+                  <span>Discover My Story</span>
+                </Link>
+              </motion.div>
+
+              {/* Synchronized Interactive Hero Pillars */}
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.6, delay: 0.4 }}
+                onMouseEnter={() => setHeroHoverPaused(true)}
+                onMouseLeave={() => setHeroHoverPaused(false)}
+                className="mt-9 grid gap-3 sm:grid-cols-3"
+              >
+                {HERO_CHAPTERS.map((pillar, idx) => {
+                  const isActive = heroChapter === idx;
+                  const chapterIdx = idx as 0 | 1 | 2;
+                  return (
+                    <button
+                      key={pillar.code}
+                      type="button"
+                      onClick={() => setHeroChapter(chapterIdx)}
+                      className={`glass-panel group relative h-full overflow-hidden rounded-2xl px-3.5 py-3.5 text-left transition duration-300 hover:-translate-y-0.5 xl:px-4 ${
+                        isActive
+                          ? `${pillar.borderActive} bg-slate-900/75`
+                          : "border-white/10 opacity-85 hover:border-white/25 hover:opacity-100"
+                      }`}
+                    >
+                      <div className="flex items-center justify-between gap-2">
+                        <p className="font-mono text-[10px] uppercase tracking-widest text-slate-400">
+                          {pillar.pillarLabel}
+                        </p>
+                        <span
+                          className={`h-1.5 w-1.5 shrink-0 rounded-full transition-transform duration-300 ${
+                            isActive ? "scale-125" : "opacity-50"
+                          }`}
+                          style={{
+                            backgroundColor: pillar.dotColor,
+                            boxShadow: isActive
+                              ? `0 0 10px ${pillar.dotColor}`
+                              : "none",
+                          }}
+                        />
+                      </div>
+                      <p className="mt-1 whitespace-nowrap font-[family-name:var(--font-display)] text-[15px] font-bold tracking-tight text-white xl:text-base">
+                        {pillar.pillarValue}
+                      </p>
+                      <p className="mt-0.5 truncate text-[11px] leading-snug text-slate-300">
+                        {pillar.pillarDetail}
+                      </p>
+
+                      {isActive && (
+                        <motion.span
+                          layoutId="heroPillarActiveLine"
+                          className="absolute inset-x-0 bottom-0 h-0.5"
+                          style={{ backgroundColor: pillar.dotColor }}
+                          transition={{
+                            type: "spring",
+                            stiffness: 340,
+                            damping: 30,
+                          }}
+                        />
+                      )}
+                    </button>
+                  );
+                })}
+              </motion.div>
+            </div>
+
+            {/* RIGHT COLUMN: Dedicated 3D Sculpture Space + Compact Stage HUD */}
+            <div className="pointer-events-none flex flex-col justify-end lg:min-h-[500px]">
+              <motion.div
+                initial={{ opacity: 0, y: 18 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.6, delay: 0.45 }}
+                onMouseEnter={() => setHeroHoverPaused(true)}
+                onMouseLeave={() => setHeroHoverPaused(false)}
+                className="pointer-events-auto relative mt-2 w-full overflow-hidden rounded-2xl border border-white/12 bg-slate-950/75 p-4 backdrop-blur-xl shadow-[0_18px_45px_rgba(2,6,23,0.7)] lg:ml-auto lg:mt-auto lg:max-w-sm"
+              >
+                <div className="flex items-center justify-between gap-3">
+                  <div className="flex items-center gap-2">
+                    <span
+                      className="h-2 w-2 rounded-full transition-colors duration-300"
+                      style={{
+                        backgroundColor: activeHeroMeta.dotColor,
+                        boxShadow: `0 0 10px ${activeHeroMeta.dotColor}`,
+                      }}
+                    />
+                    <span className="font-mono text-[10px] uppercase tracking-[0.18em] text-slate-300">
+                      {activeHeroMeta.code} • {activeHeroMeta.label}
+                    </span>
+                  </div>
+
+                  <button
+                    type="button"
+                    onClick={() => setHeroAutoPlay((prev) => !prev)}
+                    aria-label={
+                      heroAutoPlay
+                        ? "Pause automated 3D story cycle"
+                        : "Play automated 3D story cycle"
+                    }
+                    className="inline-flex items-center gap-1.5 rounded-lg border border-white/12 bg-white/[0.05] px-2.5 py-1 font-mono text-[10px] uppercase tracking-wider text-slate-200 transition hover:border-sky-400/45 hover:text-white"
+                  >
+                    {heroAutoPlay ? (
+                      <>
+                        <Pause className="h-3 w-3 text-sky-300" />
+                        <span>Auto</span>
+                      </>
+                    ) : (
+                      <>
+                        <Play className="h-3 w-3 text-sky-300" />
+                        <span>Paused</span>
+                      </>
+                    )}
+                  </button>
+                </div>
+
+                <div className="mt-2.5 min-h-[42px]">
+                  <AnimatePresence mode="wait">
+                    <motion.div
+                      key={activeHeroMeta.code}
+                      initial={{ opacity: 0, y: 6 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      exit={{ opacity: 0, y: -6 }}
+                      transition={{ duration: 0.28 }}
+                    >
+                      <p className="text-xs font-semibold text-white sm:text-[13px]">
+                        {activeHeroMeta.headline}
+                      </p>
+                      <p className="mt-0.5 text-[11px] text-slate-400">
+                        {activeHeroMeta.detail}
+                      </p>
+                    </motion.div>
+                  </AnimatePresence>
+                </div>
+
+                <div className="mt-3 flex items-center justify-between gap-3">
+                  <div className="flex items-center gap-1.5">
+                    {HERO_CHAPTERS.map((chap, idx) => {
+                      const active = heroChapter === idx;
+                      return (
+                        <button
+                          key={chap.code}
+                          type="button"
+                          onClick={() => setHeroChapter(idx as 0 | 1 | 2)}
+                          aria-label={`Select ${chap.label}`}
+                          className={`h-1.5 rounded-full transition-all duration-300 ${
+                            active
+                              ? "w-6 bg-sky-400"
+                              : "w-2 bg-white/20 hover:bg-white/40"
+                          }`}
+                        />
+                      );
+                    })}
+                  </div>
+                  <span className="hidden font-mono text-[10px] uppercase tracking-wider text-slate-400 sm:inline">
+                    Drag 3D core to orbit
+                  </span>
+                </div>
+
+                {/* Animated Cycle Progress Line */}
+                <div className="mt-3 h-[2px] w-full overflow-hidden rounded-full bg-white/10">
+                  <motion.div
+                    key={`hero-bar-${heroChapter}-${isAutomationRunning}`}
+                    initial={{ scaleX: 0 }}
+                    animate={{ scaleX: isAutomationRunning ? 1 : 0 }}
+                    transition={{
+                      duration: isAutomationRunning ? HERO_CYCLE_MS / 1000 : 0.2,
+                      ease: "linear",
+                    }}
+                    className="h-full origin-left rounded-full"
+                    style={{ backgroundColor: activeHeroMeta.dotColor }}
+                  />
+                </div>
+              </motion.div>
+            </div>
+          </div>
         </div>
       </section>
 
       {/* SECTION 2: STORY INTRODUCTION & CAMBODIA COHORT CONTEXT */}
-      <section className="relative mx-auto max-w-7xl px-4 py-16 sm:px-6 lg:px-8">
+      <section className="relative mx-auto max-w-7xl px-4 py-14 sm:px-6 sm:py-16 lg:px-8">
         <FadeInSection>
-          <div className="glass-panel grid gap-8 overflow-hidden rounded-3xl p-6 sm:p-10 lg:grid-cols-[1.2fr_1fr] lg:items-center">
-            <div>
-              <div className="inline-flex items-center gap-2 rounded-full border border-sky-400/25 bg-sky-500/10 px-3 py-1 font-mono text-xs text-sky-200">
-                <MapPin className="h-3.5 w-3.5" />
-                <span>Provinces Across Cambodia → Phnom Penh</span>
-              </div>
-              <h2 className="mt-4 font-[family-name:var(--font-display)] text-3xl font-bold text-white sm:text-4xl">
-                More Than Code: A Community of ~25 Dreamers
-              </h2>
-              <p className="mt-4 text-sm leading-relaxed text-slate-300 sm:text-base">
-                Every student at Passerelles Numériques Cambodia brings hopes from a different Cambodian province. Together, we arrived eager to learn technology — and along the way, we became teammates on the football pitch, study partners before exams, friends celebrating birthdays, and future software engineers ready to uplift our families and communities.
-              </p>
-              <div className="mt-6 flex flex-wrap gap-3">
-                <Link
-                  href="/about"
-                  className="inline-flex items-center gap-2 rounded-xl border border-white/15 bg-white/[0.05] px-4 py-2.5 text-xs font-semibold text-white transition hover:border-violet-400/50 hover:bg-violet-500/15 sm:text-sm"
-                >
-                  <span>Read My Personal Story</span>
-                  <ArrowRight className="h-4 w-4" />
-                </Link>
-                <Link
-                  href="/skills-projects"
-                  className="inline-flex items-center gap-2 rounded-xl border border-white/10 bg-transparent px-4 py-2.5 text-xs font-semibold text-sky-300 transition hover:border-sky-400/40 hover:bg-sky-500/10 sm:text-sm"
-                >
-                  <span>See IT Skills & Projects</span>
-                </Link>
-              </div>
-            </div>
+          <div className="glass-panel relative overflow-hidden rounded-3xl p-6 sm:p-10 lg:p-12">
+            {/* Subtle top highlight & internal atmospheric wash */}
+            <div
+              aria-hidden="true"
+              className="pointer-events-none absolute inset-x-12 top-0 h-px bg-gradient-to-r from-transparent via-sky-400/40 to-transparent"
+            />
+            <div
+              aria-hidden="true"
+              className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_55%_60%_at_85%_20%,rgba(56,189,248,0.11),transparent_70%)]"
+            />
 
-            <div className="overflow-hidden rounded-2xl border border-white/10">
-              <MemoryPhoto
-                slotId="home-cohort-spotlight"
-                src="/images/classmates/cohort-group.jpg"
-                alt="PNC Cohort Classmates Group Photo"
-                placeholderTitle="PNC Cohort & Friends"
-                aspect="landscape"
-              />
+            <div className="relative grid gap-8 lg:grid-cols-[1.15fr_1fr] lg:items-center lg:gap-12">
+              <div>
+                <div className="inline-flex items-center gap-2 rounded-full border border-sky-400/25 bg-sky-500/10 px-3.5 py-1.5 font-mono text-[11px] text-sky-200 sm:text-xs">
+                  <MapPin className="h-3.5 w-3.5 text-sky-300" />
+                  <span>Kampong Thom & Provinces Across Cambodia → Phnom Penh</span>
+                </div>
+
+                <h2 className="mt-5 font-[family-name:var(--font-display)] text-3xl font-bold leading-tight tracking-tight text-white sm:text-4xl">
+                  More Than Code:{" "}
+                  <span className="text-gradient-accent">
+                    A Community of ~25 Dreamers
+                  </span>
+                </h2>
+
+                <p className="mt-4 text-sm leading-relaxed text-slate-300 sm:text-base">
+                  Every student at Passerelles Numériques Cambodia brings hopes from a different Cambodian province. Together, we arrived eager to learn technology — and along the way, we became teammates on the football pitch, study partners before exams, friends celebrating birthdays, and future software engineers ready to uplift our families and communities.
+                </p>
+
+                {/* Structured mini context highlights */}
+                <div className="mt-6 grid grid-cols-3 gap-2.5 sm:gap-3">
+                  <div className="rounded-xl border border-white/[0.08] bg-white/[0.03] px-3 py-2.5">
+                    <p className="font-mono text-[10px] uppercase tracking-wider text-sky-300">
+                      Cohort
+                    </p>
+                    <p className="mt-0.5 text-xs font-semibold text-white sm:text-sm">
+                      Gen 2026
+                    </p>
+                  </div>
+                  <div className="rounded-xl border border-white/[0.08] bg-white/[0.03] px-3 py-2.5">
+                    <p className="font-mono text-[10px] uppercase tracking-wider text-indigo-300">
+                      Community
+                    </p>
+                    <p className="mt-0.5 text-xs font-semibold text-white sm:text-sm">
+                      All Provinces
+                    </p>
+                  </div>
+                  <div className="rounded-xl border border-white/[0.08] bg-white/[0.03] px-3 py-2.5">
+                    <p className="font-mono text-[10px] uppercase tracking-wider text-violet-300">
+                      Focus
+                    </p>
+                    <p className="mt-0.5 text-xs font-semibold text-white sm:text-sm">
+                      Full-Stack IT
+                    </p>
+                  </div>
+                </div>
+
+                <div className="mt-7 flex flex-wrap gap-3">
+                  <Link
+                    href="/about"
+                    className="group inline-flex items-center gap-2 rounded-xl border border-indigo-400/40 bg-indigo-500/20 px-5 py-2.5 text-xs font-semibold text-white shadow-[0_8px_24px_rgba(99,102,241,0.2)] transition active:scale-[0.98] hover:border-indigo-400/65 hover:bg-indigo-500/30 sm:text-sm"
+                  >
+                    <span>Read My Personal Story</span>
+                    <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
+                  </Link>
+                  <Link
+                    href="/skills-projects"
+                    className="inline-flex items-center gap-2 rounded-xl border border-white/12 bg-white/[0.04] px-5 py-2.5 text-xs font-semibold text-sky-300 transition active:scale-[0.98] hover:border-sky-400/45 hover:bg-sky-500/12 hover:text-white sm:text-sm"
+                  >
+                    <span>See IT Skills & Projects</span>
+                  </Link>
+                </div>
+              </div>
+
+              {/* Curated Gallery Spotlight Frame */}
+              <motion.div
+                whileHover={{ y: -3 }}
+                transition={{ duration: 0.35, ease: [0.22, 1, 0.36, 1] }}
+                className="overflow-hidden rounded-2xl border border-white/15 bg-[#050817]/90 p-2 shadow-[0_22px_55px_rgba(2,6,23,0.8)] ring-1 ring-inset ring-white/[0.05]"
+              >
+                <div className="overflow-hidden rounded-xl">
+                  <MemoryPhoto
+                    slotId="home-cohort-spotlight"
+                    src="/images/activities/2.png"
+                    alt="PNC Cohort Standing Together With Cambodian Flag"
+                    placeholderTitle="PNC Cohort & Friends"
+                    aspect="landscape"
+                    naturalAspect="landscape"
+                    objectPosition="top"
+                    priority
+                  />
+                </div>
+                <div className="mt-2 flex items-center justify-between gap-2 px-2 py-1.5">
+                  <div className="flex items-center gap-2">
+                    <span className="h-1.5 w-1.5 rounded-full bg-sky-400 shadow-[0_0_8px_#38bdf8]" />
+                    <span className="font-mono text-[10px] uppercase tracking-wider text-slate-300 sm:text-[11px]">
+                      PNC Cambodia • Phnom Penh Campus
+                    </span>
+                  </div>
+                  <span className="rounded-full border border-white/10 bg-white/[0.04] px-2 py-0.5 font-mono text-[10px] text-indigo-200">
+                    Unity
+                  </span>
+                </div>
+              </motion.div>
             </div>
           </div>
         </FadeInSection>
       </section>
 
-      {/* SECTION 3: INTERACTIVE TIMELINE PREVIEW */}
+      {/* SECTION 3: AUTOMATED INTERACTIVE TIMELINE PREVIEW */}
       <section className="mx-auto max-w-7xl px-4 py-12 sm:px-6 lg:px-8">
         <FadeInSection>
           <TimelinePreview />
@@ -271,7 +558,7 @@ export default function HomeExperience() {
                 Selected Memories & Milestones
               </h2>
               <p className="mt-2 max-w-2xl text-sm text-slate-300">
-                Click any card to open the fullscreen memory viewer — or replace the placeholder paths with your own photographs anytime.
+                Click any card to open the fullscreen photo viewer and relive memorable moments across my two years at PNC.
               </p>
             </div>
             <Link
@@ -287,7 +574,9 @@ export default function HomeExperience() {
         <StaggerContainer className="mt-8 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
           {featuredMemories.map((memory, idx) => (
             <StaggerItem key={memory.id}>
-              <article
+              <motion.article
+                whileHover={{ y: -4 }}
+                transition={{ duration: 0.28, ease: [0.22, 1, 0.36, 1] }}
                 onClick={() => setLightboxIndex(idx)}
                 role="button"
                 tabIndex={0}
@@ -306,6 +595,8 @@ export default function HomeExperience() {
                     alt={memory.title}
                     placeholderTitle={memory.title}
                     aspect="landscape"
+                    naturalAspect={memory.aspect}
+                    objectPosition={memory.objectPosition ?? "top"}
                   />
                   <span className="pointer-events-none absolute left-3 top-3 rounded-full border border-white/15 bg-slate-950/75 px-2.5 py-1 font-mono text-[10px] uppercase tracking-wider text-slate-200 backdrop-blur-md">
                     {memory.categoryLabel}
@@ -326,7 +617,7 @@ export default function HomeExperience() {
                     <span>{memory.location}</span>
                   </div>
                 </div>
-              </article>
+              </motion.article>
             </StaggerItem>
           ))}
         </StaggerContainer>
@@ -373,7 +664,9 @@ export default function HomeExperience() {
                       </h3>
                       <ArrowRight className="h-4 w-4 text-slate-400 transition-transform group-hover:translate-x-1 group-hover:text-white" />
                     </div>
-                    <p className="mt-1 text-sm text-slate-300">{card.subtitle}</p>
+                    <p className="mt-1 text-sm text-slate-300">
+                      {card.subtitle}
+                    </p>
                   </div>
                 </Link>
               </StaggerItem>

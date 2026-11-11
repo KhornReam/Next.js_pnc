@@ -254,6 +254,8 @@ export default function SkillsProjectsContent() {
                       alt={project.title}
                       placeholderTitle={project.title}
                       aspect="landscape"
+                      naturalAspect="landscape"
+                      objectPosition="top"
                     />
                     <span className="pointer-events-none absolute left-3 top-3 rounded-full border border-white/15 bg-slate-950/75 px-2.5 py-1 font-mono text-[10px] uppercase tracking-wider text-sky-200 backdrop-blur-md">
                       {project.type}
