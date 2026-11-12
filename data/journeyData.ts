@@ -473,11 +473,12 @@ export const SKILL_GROUPS: SkillGroup[] = [
     title: "Programming Languages",
     subtitle: "Core logic and multi-paradigm coding foundations",
     items: [
-      { name: "JavaScript", stage: "Year 1 → Year 2", focus: "DOM, async flows, modern ES6+" },
+      { name: "JavaScript", stage: "Year 1 → Year 2", focus: "DOM, async flows, and modern ES6+" },
       { name: "TypeScript", stage: "Year 2", focus: "Type-safe applications & clean interfaces" },
       { name: "Python", stage: "Year 1", focus: "Algorithms, scripting & core programming logic" },
       { name: "PHP", stage: "Year 2", focus: "Server-side web application fundamentals" },
-      { name: "HTML5 & CSS3", stage: "Year 1", focus: "Semantic markup, Flexbox, Grid & accessibility" },
+      { name: "HTML5", stage: "Year 1", focus: "Semantic structure, forms & web accessibility" },
+      { name: "CSS3", stage: "Year 1", focus: "Flexbox, CSS Grid, transitions & keyframe motion" },
     ],
   },
   {
@@ -488,7 +489,9 @@ export const SKILL_GROUPS: SkillGroup[] = [
       { name: "React", stage: "Year 2", focus: "Reusable component architecture & state management" },
       { name: "Next.js", stage: "Year 2", focus: "App Router, TypeScript routing & performance" },
       { name: "Tailwind CSS", stage: "Year 2", focus: "Utility-first responsive design systems" },
-      { name: "Vue.js / Bootstrap", stage: "Year 1 → Year 2", focus: "Structured UI components & rapid layouts" },
+      { name: "Vue.js", stage: "Year 1 → Year 2", focus: "Reactive components & modular web interfaces" },
+      { name: "Bootstrap", stage: "Year 1", focus: "Mobile-first grid systems & rapid UI prototyping" },
+      { name: "Three.js", stage: "Year 2", focus: "Interactive 3D WebGL experiences & camera motion" },
     ],
   },
   {
@@ -496,7 +499,8 @@ export const SKILL_GROUPS: SkillGroup[] = [
     title: "Backend & APIs",
     subtitle: "Building reliable server logic and data pipelines",
     items: [
-      { name: "Node.js & Express", stage: "Year 2", focus: "RESTful APIs, routing & middleware" },
+      { name: "Node.js", stage: "Year 2", focus: "Asynchronous JavaScript server runtime & tooling" },
+      { name: "Express.js", stage: "Year 2", focus: "RESTful API routing, controllers & middleware" },
       { name: "Laravel / MVC", stage: "Year 2", focus: "Structured backend workflows & authentication" },
       { name: "REST API Integration", stage: "Year 2", focus: "JSON contracts, validation & error handling" },
     ],
@@ -509,9 +513,40 @@ export const SKILL_GROUPS: SkillGroup[] = [
       { name: "MySQL / SQL", stage: "Year 1 → Year 2", focus: "Schema design, joins & relational queries" },
       { name: "MongoDB", stage: "Year 2", focus: "Document-based storage & flexible schemas" },
       { name: "Git & GitHub", stage: "Year 1 → Year 2", focus: "Branching, pull requests & team collaboration" },
+      { name: "Linux CLI", stage: "Year 1 → Year 2", focus: "Terminal workflows, permissions & OS basics" },
       { name: "Figma & Agile Basics", stage: "Year 1 → Year 2", focus: "Wireframing, sprint planning & task tracking" },
     ],
   },
+];
+
+export interface LearnedTechBadge {
+  name: string;
+  role: string;
+}
+
+export const ALL_LEARNED_TECH: LearnedTechBadge[] = [
+  { name: "HTML5", role: "Markup" },
+  { name: "CSS3", role: "Styling" },
+  { name: "JavaScript", role: "Language" },
+  { name: "TypeScript", role: "Type-Safe" },
+  { name: "Python", role: "Algorithms" },
+  { name: "PHP", role: "Server Lang" },
+  { name: "React", role: "UI Library" },
+  { name: "Next.js", role: "Full-Stack" },
+  { name: "Vue.js", role: "Frontend" },
+  { name: "Tailwind CSS", role: "UI System" },
+  { name: "Bootstrap", role: "CSS Grid" },
+  { name: "Node.js", role: "Runtime" },
+  { name: "Express.js", role: "Backend API" },
+  { name: "Laravel", role: "PHP MVC" },
+  { name: "REST API", role: "JSON Web" },
+  { name: "MySQL", role: "Relational SQL" },
+  { name: "MongoDB", role: "NoSQL DB" },
+  { name: "Git", role: "Version Ctrl" },
+  { name: "GitHub", role: "Team Dev" },
+  { name: "Linux", role: "Shell & OS" },
+  { name: "Figma", role: "UI/UX Design" },
+  { name: "Three.js", role: "3D WebGL" },
 ];
 
 export const DEVELOPMENT_PROGRESS = [

@@ -3,6 +3,7 @@ import {
   GitHubIcon,
   LinkedInIcon,
 } from "@/components/ui/BrandIcons";
+import TechMarquee from "@/components/ui/TechMarquee";
 import { CONTACT_DATA, SITE_CONFIG } from "@/data/journeyData";
 import { ChevronRight, Compass, Heart, Mail } from "lucide-react";
 import Image from "next/image";
@@ -190,7 +191,11 @@ export default function Footer() {
           </div>
         </div>
 
-        <div className="mt-10 flex flex-col items-center justify-between gap-3 border-t border-white/[0.08] pt-6 text-center text-xs text-slate-500 sm:mt-12 sm:flex-row sm:items-center sm:text-left">
+        <div className="mt-10 border-t border-white/[0.08] pt-8 sm:mt-12">
+          <TechMarquee />
+        </div>
+
+        <div className="mt-8 flex flex-col items-center justify-between gap-3 border-t border-white/[0.08] pt-6 text-center text-xs text-slate-500 sm:flex-row sm:items-center sm:text-left">
           <p>
             © 2026 {SITE_CONFIG.studentName} ({SITE_CONFIG.cohortLabel}) •
             Kampong Thom to Software Engineer.

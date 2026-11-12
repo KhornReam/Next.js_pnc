@@ -573,80 +573,94 @@ export default function ThreeTimelineScene({
     const lookAtTarget = new THREE.Vector3(0, 0.15, 0);
     const projectedVec = new THREE.Vector3();
     const tmpPoint = new THREE.Vector3();
+    const targetScaleVec = new THREE.Vector3();
     const startTime = performance.now();
     let frameId = 0;
+    let isStageVisible = true;
+
+    const visibilityObserver = new IntersectionObserver(
+      ([entry]) => {
+        isStageVisible = entry.isIntersecting;
+      },
+      { rootMargin: "160px" },
+    );
+    visibilityObserver.observe(container);
 
     const animate = () => {
-      const elapsed = (performance.now() - startTime) * 0.001;
-      const active = activeStageRef.current;
-      const isOverview = overviewRef.current;
+      if (isStageVisible) {
+        const elapsed = (performance.now() - startTime) * 0.001;
+        const active = activeStageRef.current;
+        const isOverview = overviewRef.current;
 
-      pointer.x += (pointer.targetX - pointer.x) * 0.05;
-      pointer.y += (pointer.targetY - pointer.y) * 0.05;
+        pointer.x += (pointer.targetX - pointer.x) * 0.05;
+        pointer.y += (pointer.targetY - pointer.y) * 0.05;
 
-      const activeMeta = STAGE_META.find((s) => s.id === active) ?? STAGE_META[0];
-      const focusFactor = isOverview ? 0.08 : 0.48;
-      const camZ = isMobile ? (isOverview ? 11.2 : 9.4) : isOverview ? 8.4 : 6.45;
+        const activeMeta = STAGE_META.find((s) => s.id === active) ?? STAGE_META[0];
+        const focusFactor = isOverview ? 0.08 : 0.48;
+        const camZ = isMobile ? (isOverview ? 11.2 : 9.4) : isOverview ? 8.4 : 6.45;
 
-      const desiredCamX = activeMeta.pos.x * focusFactor + pointer.x * 0.35;
-      const desiredCamY = activeMeta.pos.y * 0.35 + 1.15 + pointer.y * 0.2;
+        const desiredCamX = activeMeta.pos.x * focusFactor + pointer.x * 0.35;
+        const desiredCamY = activeMeta.pos.y * 0.35 + 1.15 + pointer.y * 0.2;
 
-      camera.position.x += (desiredCamX - camera.position.x) * 0.055;
-      camera.position.y += (desiredCamY - camera.position.y) * 0.055;
-      camera.position.z += (camZ - camera.position.z) * 0.055;
+        camera.position.x += (desiredCamX - camera.position.x) * 0.055;
+        camera.position.y += (desiredCamY - camera.position.y) * 0.055;
+        camera.position.z += (camZ - camera.position.z) * 0.055;
 
-      lookAtTarget.set(
-        activeMeta.pos.x * (isOverview ? 0.08 : 0.46),
-        activeMeta.pos.y * 0.38 + 0.05,
-        0
-      );
-      lookAtCurrent.lerp(lookAtTarget, 0.06);
-      camera.lookAt(lookAtCurrent);
+        lookAtTarget.set(
+          activeMeta.pos.x * (isOverview ? 0.08 : 0.46),
+          activeMeta.pos.y * 0.38 + 0.05,
+          0
+        );
+        lookAtCurrent.lerp(lookAtTarget, 0.06);
+        camera.lookAt(lookAtCurrent);
 
-      const viewW = container.clientWidth || 900;
-      const viewH = container.clientHeight || 420;
+        const viewW = container.clientWidth || 900;
+        const viewH = container.clientHeight || 420;
 
-      STAGE_META.forEach((stage, idx) => {
-        const n = nodeGroups[stage.id];
-        const isSelected = stage.id === active && !isOverview;
-        const targetScale = isSelected ? 1.24 : isOverview ? 1.0 : 0.86;
-        n.root.scale.lerp(new THREE.Vector3(targetScale, targetScale, targetScale), 0.08);
-        n.root.position.y = n.baseY + Math.sin(elapsed * 1.2 + idx * 1.5) * 0.06;
+        STAGE_META.forEach((stage, idx) => {
+          const n = nodeGroups[stage.id];
+          const isSelected = stage.id === active && !isOverview;
+          const targetScale = isSelected ? 1.24 : isOverview ? 1.0 : 0.86;
+          targetScaleVec.setScalar(targetScale);
+          n.root.scale.lerp(targetScaleVec, 0.08);
+          n.root.position.y = n.baseY + Math.sin(elapsed * 1.2 + idx * 1.5) * 0.06;
 
-        n.cage.rotation.y = -elapsed * 0.25;
-        n.cage.rotation.x = Math.sin(elapsed * 0.45 + idx) * 0.18;
-        n.ringA.rotation.z = elapsed * (isSelected ? 0.78 : 0.3);
-        n.ringB.rotation.z = -elapsed * 0.24;
+          n.cage.rotation.y = -elapsed * 0.25;
+          n.cage.rotation.x = Math.sin(elapsed * 0.45 + idx) * 0.18;
+          n.ringA.rotation.z = elapsed * (isSelected ? 0.78 : 0.3);
+          n.ringB.rotation.z = -elapsed * 0.24;
 
-        const targetHaloScale = isSelected ? 2.8 : 1.75;
-        const currentHalo = n.halo.scale.x;
-        const nextHalo = currentHalo + (targetHaloScale - currentHalo) * 0.08;
-        n.halo.scale.set(nextHalo, nextHalo, 1);
+          const targetHaloScale = isSelected ? 2.8 : 1.75;
+          const currentHalo = n.halo.scale.x;
+          const nextHalo = currentHalo + (targetHaloScale - currentHalo) * 0.08;
+          n.halo.scale.set(nextHalo, nextHalo, 1);
 
-        const floorPulse = 1 + Math.sin(elapsed * 2 + idx) * 0.08;
-        n.floorRing.scale.set(floorPulse, floorPulse, 1);
+          const floorPulse = 1 + Math.sin(elapsed * 2 + idx) * 0.08;
+          n.floorRing.scale.set(floorPulse, floorPulse, 1);
 
-        const labelEl = labelRefs.current[stage.id];
-        if (labelEl) {
-          projectedVec.set(n.root.position.x, n.root.position.y + 0.94, n.root.position.z);
-          projectedVec.project(camera);
-          const px = (projectedVec.x * 0.5 + 0.5) * viewW;
-          const py = (-projectedVec.y * 0.5 + 0.5) * viewH;
-          labelEl.style.transform = `translate3d(${px}px, ${py}px, 0) translate(-50%, -100%)`;
+          const labelEl = labelRefs.current[stage.id];
+          if (labelEl) {
+            projectedVec.set(n.root.position.x, n.root.position.y + 0.94, n.root.position.z);
+            projectedVec.project(camera);
+            const px = (projectedVec.x * 0.5 + 0.5) * viewW;
+            const py = (-projectedVec.y * 0.5 + 0.5) * viewH;
+            labelEl.style.transform = `translate3d(${px}px, ${py}px, 0) translate(-50%, -100%)`;
+          }
+        });
+
+        const posAttr = sparkGeo.getAttribute("position") as THREE.BufferAttribute;
+        for (let i = 0; i < sparkCount; i++) {
+          const t = (sparkOffsets[i] + elapsed * 0.045) % 1;
+          roadCurve.getPointAt(t, tmpPoint);
+          posAttr.setXYZ(i, tmpPoint.x, tmpPoint.y, tmpPoint.z);
         }
-      });
+        posAttr.needsUpdate = true;
 
-      const posAttr = sparkGeo.getAttribute("position") as THREE.BufferAttribute;
-      for (let i = 0; i < sparkCount; i++) {
-        const t = (sparkOffsets[i] + elapsed * 0.045) % 1;
-        roadCurve.getPointAt(t, tmpPoint);
-        posAttr.setXYZ(i, tmpPoint.x, tmpPoint.y, tmpPoint.z);
+        dustPoints.rotation.y = elapsed * 0.012;
+
+        renderer?.render(scene, camera);
       }
-      posAttr.needsUpdate = true;
 
-      dustPoints.rotation.y = elapsed * 0.012;
-
-      renderer?.render(scene, camera);
       if (!prefersReducedMotion) {
         frameId = window.requestAnimationFrame(animate);
       }
@@ -660,6 +674,7 @@ export default function ThreeTimelineScene({
 
     return () => {
       window.cancelAnimationFrame(frameId);
+      visibilityObserver.disconnect();
       canvasEl.removeEventListener("pointermove", handlePointerMove);
       canvasEl.removeEventListener("click", handleClick);
       resizeObserver.disconnect();

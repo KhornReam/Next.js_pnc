@@ -40,6 +40,11 @@ const ThreeHeroScene = dynamic(
   }
 );
 
+const ThreeHomeBackdrop = dynamic(
+  () => import("@/components/three/ThreeHomeBackdrop"),
+  { ssr: false }
+);
+
 const CHAPTER_CARDS = [
   {
     href: "/sports",
@@ -165,7 +170,11 @@ export default function HomeExperience() {
   }, [isAutomationRunning]);
 
   return (
-    <div className="relative overflow-hidden">
+    <div className="relative overflow-x-clip">
+      {/* Full-page 3D panoramic atmosphere scrolling through Sections 2-6 */}
+      <ThreeHomeBackdrop />
+
+      <div className="relative z-10">
       {/* SECTION 1: 3D ANIMATED & AUTOMATED HERO */}
       <section className="relative flex min-h-screen items-center pt-24 pb-16 sm:pt-28 sm:pb-20">
         <ThreeHeroScene activeChapter={heroChapter} />
@@ -712,6 +721,7 @@ export default function HomeExperience() {
           </div>
         </FadeInSection>
       </section>
+      </div>
     </div>
   );
 }

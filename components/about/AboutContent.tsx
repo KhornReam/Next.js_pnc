@@ -33,7 +33,13 @@ import {
   User,
   Users,
 } from "lucide-react";
+import dynamic from "next/dynamic";
 import Link from "next/link";
+
+const ThreeAboutBackdrop = dynamic(
+  () => import("@/components/three/ThreeAboutBackdrop"),
+  { ssr: false },
+);
 
 const VALUE_ITEMS = [
   {
@@ -64,16 +70,20 @@ const VALUE_ITEMS = [
 
 export default function AboutContent() {
   return (
-    <div>
-      <PageHeader
-        eyebrow="Chapter 01 • About Me"
-        title="Who I Am & Where It All Started"
-        description={ABOUT_DATA.introHeadline}
-        icon={<User className="h-3.5 w-3.5 text-sky-400" />}
-        accentGradient="from-indigo-500/20 via-sky-500/10 to-transparent"
-      />
+    <div className="relative">
+      {/* Full-page interactive 3D architectural depth canvas */}
+      <ThreeAboutBackdrop />
 
-      <div className="mx-auto max-w-6xl space-y-14 px-4 py-12 sm:px-6 sm:py-14 lg:px-8">
+      <div className="relative z-10">
+        <PageHeader
+          eyebrow="Chapter 01 • About Me"
+          title="Who I Am & Where It All Started"
+          description={ABOUT_DATA.introHeadline}
+          icon={<User className="h-3.5 w-3.5 text-sky-400" />}
+          accentGradient="from-indigo-500/20 via-sky-500/10 to-transparent"
+        />
+
+        <div className="mx-auto max-w-6xl space-y-14 px-4 py-12 sm:px-6 sm:py-14 lg:px-8">
         {/* PROFILE SIDEBAR & EDITORIAL BIO */}
         <FadeInSection>
           <div className="glass-panel relative overflow-hidden rounded-3xl p-5 sm:p-8 lg:p-10">
@@ -486,6 +496,7 @@ export default function AboutContent() {
             </div>
           </div>
         </FadeInSection>
+        </div>
       </div>
     </div>
   );

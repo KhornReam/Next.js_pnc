@@ -543,97 +543,108 @@ export default function ThreeHeroScene({
     const targetHaloCol = new THREE.Color();
 
     let frameId = 0;
+    let isHeroVisible = true;
     const startTime = performance.now();
 
+    const visibilityObserver = new IntersectionObserver(
+      ([entry]) => {
+        isHeroVisible = entry.isIntersecting;
+      },
+      { rootMargin: "160px" }
+    );
+    visibilityObserver.observe(container);
+
     const renderFrame = () => {
-      const elapsed = (performance.now() - startTime) * 0.001;
-      const theme =
-        CHAPTER_THEMES[activeChapterRef.current] ?? CHAPTER_THEMES[0];
+      if (isHeroVisible) {
+        const elapsed = (performance.now() - startTime) * 0.001;
+        const theme =
+          CHAPTER_THEMES[activeChapterRef.current] ?? CHAPTER_THEMES[0];
 
-      pointer.x += (pointer.targetX - pointer.x) * 0.05;
-      pointer.y += (pointer.targetY - pointer.y) * 0.05;
+        pointer.x += (pointer.targetX - pointer.x) * 0.05;
+        pointer.y += (pointer.targetY - pointer.y) * 0.05;
 
-      // Smoothly decay stage-switch pulse wave
-      pulseTriggerRef.current *= 0.945;
-      const pulse = pulseTriggerRef.current;
+        // Smoothly decay stage-switch pulse wave
+        pulseTriggerRef.current *= 0.945;
+        const pulse = pulseTriggerRef.current;
 
-      // Color morphing toward active chapter
-      targetRimA.setHex(theme.rimA);
-      targetRimB.setHex(theme.rimB);
-      targetEdgeCol.setHex(theme.edge);
-      targetLightCol.setHex(theme.rimLight);
-      targetHaloCol.setHex(theme.halo);
+        // Color morphing toward active chapter
+        targetRimA.setHex(theme.rimA);
+        targetRimB.setHex(theme.rimB);
+        targetEdgeCol.setHex(theme.edge);
+        targetLightCol.setHex(theme.rimLight);
+        targetHaloCol.setHex(theme.halo);
 
-      coreShaderMat.uniforms.uTime.value = elapsed;
-      coreShaderMat.uniforms.uPulse.value = pulse;
-      coreShaderMat.uniforms.uRimColorA.value.lerp(targetRimA, 0.045);
-      coreShaderMat.uniforms.uRimColorB.value.lerp(targetRimB, 0.045);
-      shellEdgesMat.color.lerp(targetEdgeCol, 0.045);
-      reactiveRim.color.lerp(targetLightCol, 0.045);
-      haloMat.color.lerp(targetHaloCol, 0.045);
+        coreShaderMat.uniforms.uTime.value = elapsed;
+        coreShaderMat.uniforms.uPulse.value = pulse;
+        coreShaderMat.uniforms.uRimColorA.value.lerp(targetRimA, 0.045);
+        coreShaderMat.uniforms.uRimColorB.value.lerp(targetRimB, 0.045);
+        shellEdgesMat.color.lerp(targetEdgeCol, 0.045);
+        reactiveRim.color.lerp(targetLightCol, 0.045);
+        haloMat.color.lerp(targetHaloCol, 0.045);
 
-      if (!dragState.isDragging) {
-        dragState.rotY += dragState.velY;
-        dragState.rotX = Math.max(
-          -0.85,
-          Math.min(0.85, dragState.rotX + dragState.velX)
+        if (!dragState.isDragging) {
+          dragState.rotY += dragState.velY;
+          dragState.rotX = Math.max(
+            -0.85,
+            Math.min(0.85, dragState.rotX + dragState.velX)
+          );
+          dragState.velY *= 0.94;
+          dragState.velX *= 0.94;
+        }
+
+        // Automated camera subtle breathing & parallax drift
+        camera.position.x += (pointer.x * 0.24 - camera.position.x) * 0.04;
+        camera.position.y +=
+          (0.12 + pointer.y * 0.16 + Math.sin(elapsed * 0.45) * 0.08 - camera.position.y) *
+          0.04;
+
+        // Smoothly maintain non-overlapping sculpture placement + gentle hover bob
+        heroGroup.position.x += (layoutTarget.baseX - heroGroup.position.x) * 0.08;
+        const bobY = layoutTarget.baseY + Math.sin(elapsed * 0.95) * 0.1;
+        heroGroup.position.y += (bobY - heroGroup.position.y) * 0.08;
+
+        const breathScale =
+          layoutTarget.scale * (1 + Math.sin(elapsed * 1.1) * 0.014 + pulse * 0.045);
+        heroGroup.scale.setScalar(
+          heroGroup.scale.x + (breathScale - heroGroup.scale.x) * 0.09
         );
-        dragState.velY *= 0.94;
-        dragState.velX *= 0.94;
+
+        heroGroup.rotation.y = elapsed * 0.16 + pointer.x * 0.22 + dragState.rotY;
+        heroGroup.rotation.x =
+          Math.sin(elapsed * 0.28) * 0.09 - pointer.y * 0.16 + dragState.rotX;
+
+        shellMesh.rotation.y = -elapsed * 0.2;
+        shellMesh.rotation.z = elapsed * 0.12;
+        const shellPulse = 1 + pulse * 0.06;
+        shellMesh.scale.setScalar(shellPulse);
+
+        const haloScale = 4.0 + Math.sin(elapsed * 1.4) * 0.25 + pulse * 0.7;
+        coreHalo.scale.set(haloScale, haloScale, 1);
+        haloMat.opacity = 0.36 + pulse * 0.18;
+
+        const pulseBoost = 1 + pulse * 2.2;
+        ringItems.forEach((item, idx) => {
+          item.group.rotation.z += item.speedZ * 0.008 * pulseBoost;
+          item.group.rotation.y =
+            item.baseY + elapsed * item.speedY * 0.35 + Math.sin(elapsed * 0.5 + idx) * 0.08;
+          item.group.rotation.x =
+            item.baseX + Math.cos(elapsed * 0.45 + idx) * 0.08;
+        });
+
+        satellites.forEach((sat, idx) => {
+          const theta = elapsed * sat.speed * (1 + pulse * 0.4) + sat.angleOffset;
+          sat.mesh.position.x = Math.cos(theta) * sat.radius;
+          sat.mesh.position.z = Math.sin(theta) * sat.radius;
+          sat.mesh.position.y = Math.sin(theta + sat.tilt) * sat.yAmp;
+          sat.mesh.rotation.x = elapsed * 0.7 + idx;
+          sat.mesh.rotation.y = elapsed * 0.9;
+        });
+
+        starField.rotation.y = elapsed * 0.014 + pointer.x * 0.035;
+        starField.rotation.x = pointer.y * 0.025;
+
+        renderer?.render(scene, camera);
       }
-
-      // Automated camera subtle breathing & parallax drift
-      camera.position.x += (pointer.x * 0.24 - camera.position.x) * 0.04;
-      camera.position.y +=
-        (0.12 + pointer.y * 0.16 + Math.sin(elapsed * 0.45) * 0.08 - camera.position.y) *
-        0.04;
-
-      // Smoothly maintain non-overlapping sculpture placement + gentle hover bob
-      heroGroup.position.x += (layoutTarget.baseX - heroGroup.position.x) * 0.08;
-      const bobY = layoutTarget.baseY + Math.sin(elapsed * 0.95) * 0.1;
-      heroGroup.position.y += (bobY - heroGroup.position.y) * 0.08;
-
-      const breathScale =
-        layoutTarget.scale * (1 + Math.sin(elapsed * 1.1) * 0.014 + pulse * 0.045);
-      heroGroup.scale.setScalar(
-        heroGroup.scale.x + (breathScale - heroGroup.scale.x) * 0.09
-      );
-
-      heroGroup.rotation.y = elapsed * 0.16 + pointer.x * 0.22 + dragState.rotY;
-      heroGroup.rotation.x =
-        Math.sin(elapsed * 0.28) * 0.09 - pointer.y * 0.16 + dragState.rotX;
-
-      shellMesh.rotation.y = -elapsed * 0.2;
-      shellMesh.rotation.z = elapsed * 0.12;
-      const shellPulse = 1 + pulse * 0.06;
-      shellMesh.scale.setScalar(shellPulse);
-
-      const haloScale = 4.0 + Math.sin(elapsed * 1.4) * 0.25 + pulse * 0.7;
-      coreHalo.scale.set(haloScale, haloScale, 1);
-      haloMat.opacity = 0.36 + pulse * 0.18;
-
-      const pulseBoost = 1 + pulse * 2.2;
-      ringItems.forEach((item, idx) => {
-        item.group.rotation.z += item.speedZ * 0.008 * pulseBoost;
-        item.group.rotation.y =
-          item.baseY + elapsed * item.speedY * 0.35 + Math.sin(elapsed * 0.5 + idx) * 0.08;
-        item.group.rotation.x =
-          item.baseX + Math.cos(elapsed * 0.45 + idx) * 0.08;
-      });
-
-      satellites.forEach((sat, idx) => {
-        const theta = elapsed * sat.speed * (1 + pulse * 0.4) + sat.angleOffset;
-        sat.mesh.position.x = Math.cos(theta) * sat.radius;
-        sat.mesh.position.z = Math.sin(theta) * sat.radius;
-        sat.mesh.position.y = Math.sin(theta + sat.tilt) * sat.yAmp;
-        sat.mesh.rotation.x = elapsed * 0.7 + idx;
-        sat.mesh.rotation.y = elapsed * 0.9;
-      });
-
-      starField.rotation.y = elapsed * 0.014 + pointer.x * 0.035;
-      starField.rotation.x = pointer.y * 0.025;
-
-      renderer?.render(scene, camera);
 
       if (!prefersReducedMotion) {
         frameId = window.requestAnimationFrame(renderFrame);
@@ -648,6 +659,7 @@ export default function ThreeHeroScene({
 
     return () => {
       window.cancelAnimationFrame(frameId);
+      visibilityObserver.disconnect();
       canvasEl.removeEventListener("pointerdown", handleCanvasPointerDown);
       window.removeEventListener("pointermove", handleWindowPointerMove);
       window.removeEventListener("pointerup", handleWindowPointerUp);

@@ -166,7 +166,12 @@ export function VueIcon({ className = "h-5 w-5" }: { className?: string }) {
   return (
     <svg viewBox="0 0 24 24" aria-hidden="true" className={className}>
       <path d="M2 4h4l6 10.4L18 4h4L12 21 2 4Z" fill="#41B883" />
-      <path d="M6 4h3.7L12 8l2.3-4H18l-6 10.4L6 4Z" fill="#35495E" />
+      <path d="M6 4h3.7L12 8l2.3-4H18l-6 10.4L6 4Z" fill="#34495E" />
+      <path
+        d="M6.7 4.4H9.4L12 8.9l2.6-4.5h2.7L12 13.5 6.7 4.4Z"
+        fill="#64748B"
+        fillOpacity="0.45"
+      />
     </svg>
   );
 }
@@ -325,6 +330,38 @@ export function FramerMotionIcon({ className = "h-4 w-4" }: { className?: string
   );
 }
 
+export function LinuxIcon({ className = "h-5 w-5" }: { className?: string }) {
+  return (
+    <svg viewBox="0 0 24 24" aria-hidden="true" className={className}>
+      <rect
+        x="2.2"
+        y="3.5"
+        width="19.6"
+        height="17"
+        rx="4"
+        fill="#1E293B"
+        stroke="#FCC624"
+        strokeWidth="1.25"
+      />
+      <path
+        d="M6.8 9.2 10.4 12l-3.6 2.8"
+        fill="none"
+        stroke="#FCC624"
+        strokeWidth="1.85"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+      <path
+        d="M12.2 15h5"
+        fill="none"
+        stroke="#F8FAFC"
+        strokeWidth="1.85"
+        strokeLinecap="round"
+      />
+    </svg>
+  );
+}
+
 export interface TechVisualMeta {
   color: string;
   textColor: string;
@@ -334,11 +371,24 @@ export interface TechVisualMeta {
   icon: ReactNode;
 }
 
-export function getTechVisualMeta(name: string, size: "sm" | "md" = "md"): TechVisualMeta {
+export function getTechVisualMeta(
+  name: string,
+  size: "sm" | "pill" | "md" = "md",
+): TechVisualMeta {
   const key = name.toLowerCase();
-  const iconCls = size === "sm" ? "h-3.5 w-3.5" : "h-6 w-6";
-  const dualCls = size === "sm" ? "h-3.5 w-3.5" : "h-[18px] w-[18px]";
-  const dualGap = size === "sm" ? "gap-1" : "gap-1";
+  const iconCls =
+    size === "sm"
+      ? "h-3.5 w-3.5"
+      : size === "pill"
+        ? "h-[18px] w-[18px]"
+        : "h-6 w-6";
+  const dualCls =
+    size === "sm"
+      ? "h-3.5 w-3.5"
+      : size === "pill"
+        ? "h-4 w-4"
+        : "h-[18px] w-[18px]";
+  const dualGap = "gap-1";
 
   if (key.includes("javascript")) {
     return {
@@ -380,7 +430,7 @@ export function getTechVisualMeta(name: string, size: "sm" | "md" = "md"): TechV
       icon: <PhpIcon className={iconCls} />,
     };
   }
-  if (key.includes("html")) {
+  if (key.includes("html") && key.includes("css")) {
     return {
       color: "#E34F26",
       textColor: "#FB923C",
@@ -393,6 +443,36 @@ export function getTechVisualMeta(name: string, size: "sm" | "md" = "md"): TechV
           <Css3Icon className={dualCls} />
         </span>
       ),
+    };
+  }
+  if (key.includes("html")) {
+    return {
+      color: "#E34F26",
+      textColor: "#FDBA74",
+      glow: "rgba(227, 79, 38, 0.28)",
+      bg: "rgba(227, 79, 38, 0.15)",
+      border: "rgba(227, 79, 38, 0.4)",
+      icon: <Html5Icon className={iconCls} />,
+    };
+  }
+  if (key.includes("tailwind")) {
+    return {
+      color: "#38BDF8",
+      textColor: "#38BDF8",
+      glow: "rgba(56, 189, 248, 0.28)",
+      bg: "rgba(6, 182, 212, 0.16)",
+      border: "rgba(56, 189, 248, 0.42)",
+      icon: <TailwindIcon className={iconCls} />,
+    };
+  }
+  if (key.includes("css")) {
+    return {
+      color: "#33A9DC",
+      textColor: "#7DD3FC",
+      glow: "rgba(21, 114, 182, 0.3)",
+      bg: "rgba(21, 114, 182, 0.18)",
+      border: "rgba(51, 169, 220, 0.42)",
+      icon: <Css3Icon className={iconCls} />,
     };
   }
   if (key.includes("react") && key.includes("vue")) {
@@ -430,17 +510,7 @@ export function getTechVisualMeta(name: string, size: "sm" | "md" = "md"): TechV
       icon: <NextJsIcon className={iconCls} />,
     };
   }
-  if (key.includes("tailwind")) {
-    return {
-      color: "#38BDF8",
-      textColor: "#38BDF8",
-      glow: "rgba(56, 189, 248, 0.28)",
-      bg: "rgba(6, 182, 212, 0.16)",
-      border: "rgba(56, 189, 248, 0.42)",
-      icon: <TailwindIcon className={iconCls} />,
-    };
-  }
-  if (key.includes("vue") || key.includes("bootstrap")) {
+  if (key.includes("vue") && key.includes("bootstrap")) {
     return {
       color: "#41B883",
       textColor: "#4ADE80",
@@ -453,6 +523,26 @@ export function getTechVisualMeta(name: string, size: "sm" | "md" = "md"): TechV
           <BootstrapIcon className={dualCls} />
         </span>
       ),
+    };
+  }
+  if (key.includes("vue")) {
+    return {
+      color: "#41B883",
+      textColor: "#6EE7B7",
+      glow: "rgba(65, 184, 131, 0.28)",
+      bg: "rgba(65, 184, 131, 0.15)",
+      border: "rgba(65, 184, 131, 0.4)",
+      icon: <VueIcon className={iconCls} />,
+    };
+  }
+  if (key.includes("bootstrap")) {
+    return {
+      color: "#8B5CF6",
+      textColor: "#C4B5FD",
+      glow: "rgba(121, 82, 179, 0.3)",
+      bg: "rgba(121, 82, 179, 0.18)",
+      border: "rgba(139, 92, 246, 0.42)",
+      icon: <BootstrapIcon className={iconCls} />,
     };
   }
   if (key.includes("node") && key.includes("laravel")) {
@@ -493,6 +583,16 @@ export function getTechVisualMeta(name: string, size: "sm" | "md" = "md"): TechV
       bg: "rgba(95, 160, 78, 0.15)",
       border: "rgba(95, 160, 78, 0.4)",
       icon: <NodeJsIcon className={iconCls} />,
+    };
+  }
+  if (key.includes("express")) {
+    return {
+      color: "#CBD5E1",
+      textColor: "#E2E8F0",
+      glow: "rgba(148, 163, 184, 0.22)",
+      bg: "rgba(148, 163, 184, 0.12)",
+      border: "rgba(148, 163, 184, 0.34)",
+      icon: <ExpressIcon className={iconCls} />,
     };
   }
   if (key.includes("laravel")) {
@@ -560,6 +660,16 @@ export function getTechVisualMeta(name: string, size: "sm" | "md" = "md"): TechV
       icon: <GitHubIcon className={`${iconCls} text-white`} />,
     };
   }
+  if (key === "git") {
+    return {
+      color: "#F05032",
+      textColor: "#FCA5A5",
+      glow: "rgba(240, 80, 50, 0.28)",
+      bg: "rgba(240, 80, 50, 0.15)",
+      border: "rgba(240, 80, 50, 0.4)",
+      icon: <GitIcon className={iconCls} />,
+    };
+  }
   if (key.includes("git")) {
     return {
       color: "#F05032",
@@ -573,6 +683,16 @@ export function getTechVisualMeta(name: string, size: "sm" | "md" = "md"): TechV
           <GitHubIcon className={`${dualCls} text-white`} />
         </span>
       ),
+    };
+  }
+  if (key.includes("linux")) {
+    return {
+      color: "#FCC624",
+      textColor: "#FDE047",
+      glow: "rgba(252, 198, 36, 0.24)",
+      bg: "rgba(252, 198, 36, 0.13)",
+      border: "rgba(252, 198, 36, 0.36)",
+      icon: <LinuxIcon className={iconCls} />,
     };
   }
   if (key.includes("figma")) {

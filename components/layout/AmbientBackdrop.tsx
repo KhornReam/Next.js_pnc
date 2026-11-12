@@ -1,3 +1,5 @@
+import ThreeAmbientMount from "@/components/three/ThreeAmbientMount";
+
 export default function AmbientBackdrop() {
   return (
     <div
@@ -18,13 +20,16 @@ export default function AmbientBackdrop() {
       {/* 4. Subtle Footer Nadir Horizon Glow */}
       <div className="absolute inset-x-0 bottom-0 h-[380px] bg-[radial-gradient(ellipse_70%_70%_at_50%_100%,rgba(59,130,246,0.11),rgba(99,102,241,0.06)_48%,transparent_78%)]" />
 
-      {/* 5. Desktop Architectural Layout Column Guides (max-w-7xl) */}
+      {/* 5. Persistent Route-Aware Full-Page 3D WebGL Backdrop (Subpages) */}
+      <ThreeAmbientMount />
+
+      {/* 6. Desktop Architectural Layout Column Guides (max-w-7xl) */}
       <div className="mx-auto hidden h-full max-w-7xl justify-between px-4 sm:px-6 lg:flex lg:px-8">
         <div className="h-full w-px bg-gradient-to-b from-white/[0.05] via-indigo-300/[0.045] to-transparent" />
         <div className="h-full w-px bg-gradient-to-b from-white/[0.05] via-indigo-300/[0.045] to-transparent" />
       </div>
 
-      {/* 6. Soft Top-Edge & Side Readability Vignette */}
+      {/* 7. Soft Top-Edge & Side Readability Vignette */}
       <div className="absolute inset-0 bg-[radial-gradient(ellipse_115%_95%_at_50%_45%,transparent_55%,rgba(2,4,12,0.55)_100%)]" />
     </div>
   );
