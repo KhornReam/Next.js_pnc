@@ -767,7 +767,7 @@ export default function ThreeGlobalBackdrop({
     <div className="pointer-events-none absolute inset-0 overflow-hidden">
       <div ref={containerRef} className="h-full w-full" />
       {/* Center readability dusk scrim so chapter headlines & cards remain razor-crisp */}
-      <div className="absolute inset-0 bg-[radial-gradient(ellipse_66%_56%_at_50%_26%,rgba(3,6,20,0.38)_0%,transparent_76%)]" />
+      <div className="absolute inset-0 bg-[radial-gradient(ellipse_66%_56%_at_50%_26%,rgba(3,6,20,0.12)_0%,transparent_76%)]" />
     </div>
   );
 }

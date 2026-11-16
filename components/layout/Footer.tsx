@@ -31,7 +31,7 @@ const ARCHIVE_LINKS = [
 
 export default function Footer() {
   return (
-    <footer className="relative z-10 mt-16 border-t border-white/[0.08] bg-[#030510]/88 backdrop-blur-xl sm:mt-24">
+    <footer className="relative z-10 mt-16 border-t border-white/[0.08] bg-[#030510]/50 backdrop-blur-sm sm:mt-24">
       <div
         aria-hidden="true"
         className="pointer-events-none absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-indigo-400/50 to-transparent"
@@ -188,6 +188,20 @@ export default function Footer() {
               <Compass className="h-3.5 w-3.5 text-sky-400" />
               <span>Open 3D Timeline</span>
             </Link>
+
+            <details className="mt-3 rounded-xl border border-sky-400/20 bg-sky-500/[0.06] p-3 text-left lg:max-w-sm">
+              <summary className="cursor-pointer list-none text-sm font-semibold text-sky-200 marker:hidden">
+                Install this app on iPhone
+              </summary>
+              <ol className="mt-3 list-decimal space-y-1.5 pl-5 text-xs leading-relaxed text-slate-300">
+                <li>Open this website in Safari on your iPhone.</li>
+                <li>Tap the Share button, then choose “Add to Home Screen.”</li>
+                <li>Tap “Add.” The app will appear on your Home Screen.</li>
+              </ol>
+              <p className="mt-3 text-[11px] leading-relaxed text-slate-400">
+                Installation works after the site is published at its secure HTTPS address.
+              </p>
+            </details>
           </div>
         </div>
 
