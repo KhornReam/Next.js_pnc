@@ -15,14 +15,14 @@ export default function AppleIcon() {
           justifyContent: "center",
           borderRadius: 38,
           background: "linear-gradient(145deg, #171333, #030614)",
-          border: "6px solid #8b5cf6",
+          border: "6px solid #38bdf8",
           color: "white",
-          fontSize: 58,
+          fontSize: 48,
           fontWeight: 700,
           letterSpacing: -4,
         }}
       >
-        KR
+        PNC
       </div>
     ),
     size,

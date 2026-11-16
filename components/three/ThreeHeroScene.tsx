@@ -11,25 +11,31 @@ export interface ThreeHeroSceneProps {
 
 const CHAPTER_THEMES = [
   {
+    name: "Foundation",
     rimA: 0x38bdf8,
-    rimB: 0x818cf8,
-    edge: 0x7dd3fc,
+    rimB: 0x2563eb,
+    edge: 0xbae6fd,
     rimLight: 0x38bdf8,
     halo: 0x38bdf8,
+    accentNode: 0x38bdf8,
   },
   {
+    name: "Growth",
     rimA: 0xa855f7,
-    rimB: 0x38bdf8,
-    edge: 0xc4b5fd,
+    rimB: 0x6366f1,
+    edge: 0xe9d5ff,
     rimLight: 0xa855f7,
     halo: 0x8b5cf6,
+    accentNode: 0xc084fc,
   },
   {
+    name: "Future",
     rimA: 0xfbbf24,
-    rimB: 0x38bdf8,
-    edge: 0xfde68a,
+    rimB: 0xd97706,
+    edge: 0xfef08a,
     rimLight: 0xf59e0b,
     halo: 0xfbbf24,
+    accentNode: 0xfde047,
   },
 ] as const;
 
@@ -43,14 +49,38 @@ function createBokehTexture(): THREE.CanvasTexture | null {
 
   const grad = ctx.createRadialGradient(64, 64, 1, 64, 64, 62);
   grad.addColorStop(0, "rgba(255, 255, 255, 1)");
-  grad.addColorStop(0.28, "rgba(224, 231, 255, 0.8)");
-  grad.addColorStop(0.6, "rgba(99, 102, 241, 0.24)");
+  grad.addColorStop(0.22, "rgba(224, 242, 254, 0.85)");
+  grad.addColorStop(0.55, "rgba(99, 102, 241, 0.28)");
   grad.addColorStop(1, "rgba(0, 0, 0, 0)");
 
   ctx.clearRect(0, 0, 128, 128);
   ctx.fillStyle = grad;
   ctx.beginPath();
   ctx.arc(64, 64, 62, 0, Math.PI * 2);
+  ctx.fill();
+
+  const texture = new THREE.CanvasTexture(canvas);
+  texture.needsUpdate = true;
+  return texture;
+}
+
+function createFlareTexture(): THREE.CanvasTexture | null {
+  if (typeof document === "undefined") return null;
+  const canvas = document.createElement("canvas");
+  canvas.width = 64;
+  canvas.height = 64;
+  const ctx = canvas.getContext("2d");
+  if (!ctx) return null;
+
+  const grad = ctx.createRadialGradient(32, 32, 0, 32, 32, 30);
+  grad.addColorStop(0, "rgba(255, 255, 255, 1)");
+  grad.addColorStop(0.35, "rgba(186, 230, 253, 0.7)");
+  grad.addColorStop(1, "rgba(0, 0, 0, 0)");
+
+  ctx.clearRect(0, 0, 64, 64);
+  ctx.fillStyle = grad;
+  ctx.beginPath();
+  ctx.arc(32, 32, 30, 0, Math.PI * 2);
   ctx.fill();
 
   const texture = new THREE.CanvasTexture(canvas);
@@ -96,12 +126,12 @@ export default function ThreeHeroScene({
     const isInitialMobile = initialW < 1024;
 
     renderer.setPixelRatio(
-      Math.min(window.devicePixelRatio || 1, isInitialMobile ? 1.35 : 2)
+      Math.min(window.devicePixelRatio || 1, isInitialMobile ? 1.35 : 2),
     );
     renderer.setSize(initialW, initialH);
     renderer.setClearColor(0x000000, 0);
     renderer.toneMapping = THREE.ACESFilmicToneMapping;
-    renderer.toneMappingExposure = 1.28;
+    renderer.toneMappingExposure = 1.24;
     renderer.domElement.style.display = "block";
     renderer.domElement.style.width = "100%";
     renderer.domElement.style.height = "100%";
@@ -112,35 +142,45 @@ export default function ThreeHeroScene({
 
     const scene = new THREE.Scene();
 
+    // High dynamic range studio environment for rich, real-world metallic reflections
     const pmremGenerator = new THREE.PMREMGenerator(renderer);
     const roomEnv = new RoomEnvironment();
     const envRT = pmremGenerator.fromScene(roomEnv, 0.04);
     scene.environment = envRT.texture;
-    scene.environmentIntensity = 0.76;
+    scene.environmentIntensity = 1.12;
 
     const camera = new THREE.PerspectiveCamera(
       42,
       initialW / initialH,
       0.1,
-      100
+      100,
     );
 
-    // 3-point lighting with reactive secondary stage accent
-    const keyLight = new THREE.DirectionalLight(0xe0e7ff, 2.7);
-    keyLight.position.set(5, 6, 5);
+    // Multi-point studio lighting calibrated to real-world industrial 3D standards
+    const keyLight = new THREE.DirectionalLight(0xffffff, 3.4);
+    keyLight.position.set(6, 8, 6);
     scene.add(keyLight);
 
-    const cyanRim = new THREE.PointLight(0x38bdf8, 22, 22);
-    cyanRim.position.set(-4.0, 2.4, 2.8);
-    scene.add(cyanRim);
+    const fillLight = new THREE.DirectionalLight(0x6366f1, 1.0);
+    fillLight.position.set(-6, -3, 4);
+    scene.add(fillLight);
 
-    const reactiveRim = new THREE.PointLight(0x8b5cf6, 26, 24);
-    reactiveRim.position.set(4.5, -2.2, 2.8);
-    scene.add(reactiveRim);
+    const rimBacklight = new THREE.DirectionalLight(0x38bdf8, 2.6);
+    rimBacklight.position.set(0, 5, -6);
+    scene.add(rimBacklight);
 
-    const topAccent = new THREE.PointLight(0xfbbf24, 12, 18);
-    topAccent.position.set(1.5, 4.2, -2.5);
-    scene.add(topAccent);
+    // Accent point lights matching the 3 orbital rings
+    const cyanPointLight = new THREE.PointLight(0x38bdf8, 22, 14);
+    cyanPointLight.position.set(-2.8, 1.8, 2.4);
+    scene.add(cyanPointLight);
+
+    const violetPointLight = new THREE.PointLight(0xa855f7, 24, 14);
+    violetPointLight.position.set(1.4, -1.2, 2.8);
+    scene.add(violetPointLight);
+
+    const amberPointLight = new THREE.PointLight(0xf59e0b, 18, 14);
+    amberPointLight.position.set(-1.2, 3.2, 1.8);
+    scene.add(amberPointLight);
 
     const disposableGeos: THREE.BufferGeometry[] = [];
     const disposableMats: THREE.Material[] = [];
@@ -149,9 +189,12 @@ export default function ThreeHeroScene({
     const bokehTex = createBokehTexture();
     if (bokehTex) disposableTextures.push(bokehTex);
 
+    const flareTex = createFlareTexture();
+    if (flareTex) disposableTextures.push(flareTex);
+
     const layoutTarget = {
       baseX: 2.6,
-      baseY: 0.15,
+      baseY: 0.16,
       scale: 0.96,
       isMobile: isInitialMobile,
     };
@@ -174,13 +217,11 @@ export default function ThreeHeroScene({
         layoutTarget.baseY = 1.05;
         layoutTarget.scale = Math.min(0.84, Math.max(0.56, halfW / 3.4));
       } else {
-        // Keep the entire 3D sculpture & satellites cleanly inside the right column
-        // so orbiting rings never collide with left-hand typography.
         const rightCenter = halfW * 0.52;
         const maxAllowedRadius = Math.max(1.5, halfW * 0.44);
         const targetScale = Math.min(
-          1.0,
-          Math.max(0.68, maxAllowedRadius / 2.38)
+          1.02,
+          Math.max(0.7, maxAllowedRadius / 2.36),
         );
         layoutTarget.baseX = Math.max(rightCenter, maxAllowedRadius + 0.22);
         layoutTarget.baseY = 0.18;
@@ -196,24 +237,29 @@ export default function ThreeHeroScene({
     heroGroup.position.set(layoutTarget.baseX, layoutTarget.baseY, 0);
     heroGroup.scale.setScalar(layoutTarget.scale);
 
-    // 1. Custom GLSL Fresnel + Animated Energy Core Sphere
-    const coreGeo = new THREE.SphereGeometry(0.86, 64, 64);
+    // -------------------------------------------------------------------------
+    // 1. REALISTIC CORE SPHERE: Obsidian Body + Atmospheric Rayleigh Rim Glow
+    // -------------------------------------------------------------------------
+    const coreGeo = new THREE.SphereGeometry(0.98, 64, 64);
     const coreShaderMat = new THREE.ShaderMaterial({
       uniforms: {
         uTime: { value: 0 },
         uPulse: { value: 0 },
-        uInnerColor: { value: new THREE.Color(0x060919) },
+        uInnerColor: { value: new THREE.Color(0x040714) },
         uRimColorA: { value: new THREE.Color(CHAPTER_THEMES[0].rimA) },
         uRimColorB: { value: new THREE.Color(CHAPTER_THEMES[0].rimB) },
+        uLightDir: { value: new THREE.Vector3(0.6, 0.8, 0.6).normalize() },
       },
       vertexShader: `
         varying vec3 vNormal;
         varying vec3 vViewDir;
         varying vec3 vLocalPos;
+        varying vec3 vWorldNormal;
         void main() {
           vLocalPos = position;
           vec4 mvPosition = modelViewMatrix * vec4(position, 1.0);
           vNormal = normalize(normalMatrix * normal);
+          vWorldNormal = normalize((modelMatrix * vec4(normal, 0.0)).xyz);
           vViewDir = normalize(-mvPosition.xyz);
           gl_Position = projectionMatrix * mvPosition;
         }
@@ -224,18 +270,39 @@ export default function ThreeHeroScene({
         uniform vec3 uInnerColor;
         uniform vec3 uRimColorA;
         uniform vec3 uRimColorB;
+        uniform vec3 uLightDir;
         varying vec3 vNormal;
         varying vec3 vViewDir;
         varying vec3 vLocalPos;
+        varying vec3 vWorldNormal;
 
         void main() {
-          float ndotv = clamp(dot(normalize(vNormal), normalize(vViewDir)), 0.0, 1.0);
-          float fresnel = pow(1.0 - ndotv, 2.45);
-          float wave = 0.5 + 0.5 * sin(vLocalPos.y * 5.2 - uTime * 1.65 + vLocalPos.x * 3.1);
-          vec3 rim = mix(uRimColorA, uRimColorB, wave);
-          float innerGlow = (0.14 + uPulse * 0.22) * smoothstep(0.35, 1.0, wave) * (1.0 - ndotv);
-          vec3 finalColor = mix(uInnerColor, rim, clamp(fresnel * (1.16 + uPulse * 0.25) + innerGlow, 0.0, 1.0));
-          gl_FragColor = vec4(finalColor, 1.0);
+          vec3 n = normalize(vNormal);
+          vec3 v = normalize(vViewDir);
+          float ndotv = clamp(dot(n, v), 0.0, 1.0);
+
+          // Physical Rayleigh atmospheric rim scattering
+          float atmosphericFresnel = pow(1.0 - ndotv, 2.85);
+
+          // Subtle animated telemetry latitude lines
+          float latWave = sin(vLocalPos.y * 32.0 - uTime * 1.2 + vLocalPos.x * 2.5);
+          float latGlow = smoothstep(0.85, 1.0, latWave) * (1.0 - ndotv) * 0.18;
+
+          // Studio directional specular sheen on dark sphere
+          vec3 halfVec = normalize(uLightDir + v);
+          float ndoth = max(0.0, dot(n, halfVec));
+          float specular = pow(ndoth, 48.0) * 0.42;
+
+          // Smooth planetary gradient from deep azure to violet
+          float wave = 0.5 + 0.5 * sin(vLocalPos.y * 4.2 - uTime * 1.4 + vLocalPos.z * 3.0);
+          vec3 rimGrad = mix(uRimColorA, uRimColorB, wave);
+
+          // Layer atmospheric haze
+          float rimIntensity = atmosphericFresnel * (1.35 + uPulse * 0.45);
+          vec3 finalAtmosphere = mix(uInnerColor, rimGrad, clamp(rimIntensity + latGlow, 0.0, 1.0));
+          finalAtmosphere += vec3(specular) * vec3(0.85, 0.92, 1.0);
+
+          gl_FragColor = vec4(finalAtmosphere, 1.0);
         }
       `,
     });
@@ -244,191 +311,301 @@ export default function ThreeHeroScene({
     disposableGeos.push(coreGeo);
     disposableMats.push(coreShaderMat);
 
-    // Optical center halo sprite
+    // Atmospheric outer planetary corona sprite
     const haloMat = new THREE.SpriteMaterial({
       map: bokehTex ?? undefined,
-      color: CHAPTER_THEMES[0].halo,
+      color: 0x38bdf8,
       transparent: true,
-      opacity: 0.42,
+      opacity: 0.38,
       blending: THREE.AdditiveBlending,
       depthWrite: false,
     });
     const coreHalo = new THREE.Sprite(haloMat);
-    coreHalo.scale.set(4.1, 4.1, 1);
+    coreHalo.scale.set(4.2, 4.2, 1);
     heroGroup.add(coreHalo);
     disposableMats.push(haloMat);
 
-    // 2. Geodesic Glass Crystal Cage
-    const shellGeo = new THREE.IcosahedronGeometry(1.26, 1);
+    // -------------------------------------------------------------------------
+    // 2. GEODESIC ARCHITECTURAL CAGE: Faceted Glass + Crisp White/Cyan Filigree
+    // -------------------------------------------------------------------------
+    // Subdivided icosahedron (320 triangular facets) matching reference density
+    const shellGeo = new THREE.IcosahedronGeometry(1.35, 2);
+
     const shellGlassMat = new THREE.MeshPhysicalMaterial({
-      color: 0x1e1b4b,
-      metalness: 0.16,
+      color: 0x0f172a,
+      emissive: 0x1e1b4b,
+      emissiveIntensity: 0.12,
+      metalness: 0.1,
       roughness: 0.08,
       clearcoat: 1.0,
-      clearcoatRoughness: 0.06,
-      reflectivity: 1.0,
+      clearcoatRoughness: 0.04,
+      reflectivity: 0.95,
       transparent: true,
-      opacity: 0.22,
-      side: THREE.FrontSide,
+      opacity: 0.18,
+      side: THREE.DoubleSide,
       depthWrite: false,
     });
     const shellMesh = new THREE.Mesh(shellGeo, shellGlassMat);
     heroGroup.add(shellMesh);
 
+    // Delicate structural wireframe filaments
     const shellEdgesGeo = new THREE.EdgesGeometry(shellGeo);
     const shellEdgesMat = new THREE.LineBasicMaterial({
-      color: CHAPTER_THEMES[0].edge,
+      color: 0xbae6fd,
       transparent: true,
-      opacity: 0.5,
+      opacity: 0.62,
+      blending: THREE.AdditiveBlending,
+      depthWrite: false,
     });
     const shellEdges = new THREE.LineSegments(shellEdgesGeo, shellEdgesMat);
     shellMesh.add(shellEdges);
-    disposableGeos.push(shellGeo, shellEdgesGeo);
-    disposableMats.push(shellGlassMat, shellEdgesMat);
 
-    // 3. Precision Metallic Gimbal Rings (tighter cohesive proportions)
-    const ringDefs = [
+    // Micro-connector rivets at lattice vertices
+    const shellPointsMat = new THREE.PointsMaterial({
+      size: 0.042,
+      color: 0xf0f9ff,
+      transparent: true,
+      opacity: 0.85,
+      blending: THREE.AdditiveBlending,
+      depthWrite: false,
+    });
+    const shellPoints = new THREE.Points(shellGeo, shellPointsMat);
+    shellMesh.add(shellPoints);
+
+    disposableGeos.push(shellGeo, shellEdgesGeo);
+    disposableMats.push(shellGlassMat, shellEdgesMat, shellPointsMat);
+
+    // -------------------------------------------------------------------------
+    // 3. THREE PRECISION ORBITAL RINGS & DYNAMIC ORBITING DATA NODES
+    // Exactly matches the SAP scale and 3 distinct colors in reference image:
+    // Outer: Polished Copper/Bronze | Middle: Electric Cyan | Inner: Neon Violet
+    // -------------------------------------------------------------------------
+    interface RingItem {
+      group: THREE.Group;
+      radius: number;
+      nodes: {
+        mesh: THREE.Mesh;
+        speed: number;
+        phase: number;
+        flare?: THREE.Sprite;
+      }[];
+      torusMesh: THREE.Mesh;
+      torusMat: THREE.MeshPhysicalMaterial;
+      baseRotX: number;
+      baseRotY: number;
+      baseRotZ: number;
+      precessionSpeedX: number;
+      precessionSpeedY: number;
+      precessionSpeedZ: number;
+    }
+
+    const ringNodeGeo = new RoundedBoxGeometry(0.12, 0.12, 0.12, 3, 0.026);
+    disposableGeos.push(ringNodeGeo);
+
+    const ringConfigs = [
+      // Ring 0: Inner Royal Neon Violet (passes across front of core sphere)
       {
         radius: 1.62,
-        tube: 0.032,
-        color: 0x1e293b,
-        emissive: 0x0284c7,
-        accentColor: 0x38bdf8,
-        rotX: 1.04,
-        rotY: 0.4,
-        speedX: 0.06,
-        speedY: 0.34,
-        speedZ: 0.44,
-      },
-      {
-        radius: 1.92,
-        tube: 0.026,
-        color: 0x1e1b4b,
+        tube: 0.024,
+        color: 0x6d28d9,
         emissive: 0x7c3aed,
-        accentColor: 0xc084fc,
-        rotX: -0.78,
-        rotY: 0.85,
-        speedX: 0.22,
-        speedY: -0.26,
-        speedZ: -0.34,
+        emissiveIntensity: 0.42,
+        accentColor: 0xe879f9,
+        flareColor: 0xd946ef,
+        rotX: 0.58,
+        rotY: -0.92,
+        rotZ: 0.42,
+        speedX: 0.08,
+        speedY: 0.28,
+        speedZ: -0.22,
+        nodes: [{ speed: 0.35, phase: 0.65, size: 1.0 }],
       },
+      // Ring 1: Middle Electric Sky Blue / Cyan (wide inclined ellipse)
       {
-        radius: 2.2,
-        tube: 0.021,
-        color: 0x1e293b,
-        emissive: 0xd97706,
-        accentColor: 0xfbbf24,
-        rotX: 0.46,
-        rotY: -0.88,
-        speedX: -0.16,
-        speedY: 0.22,
+        radius: 1.94,
+        tube: 0.026,
+        color: 0x0284c7,
+        emissive: 0x0284c7,
+        emissiveIntensity: 0.38,
+        accentColor: 0x38bdf8,
+        flareColor: 0x38bdf8,
+        rotX: -0.72,
+        rotY: 0.84,
+        rotZ: -0.24,
+        speedX: 0.24,
+        speedY: -0.26,
         speedZ: 0.28,
+        nodes: [
+          { speed: -0.28, phase: 2.1, size: 0.95 },
+          { speed: -0.28, phase: 5.2, size: 0.95 },
+        ],
+      },
+      // Ring 2: Outer Polished Bronze / Copper (high diagonal sweep)
+      {
+        radius: 2.26,
+        tube: 0.022,
+        color: 0xb45309,
+        emissive: 0x9a3412,
+        emissiveIntensity: 0.32,
+        accentColor: 0xfbbf24,
+        flareColor: 0xf59e0b,
+        rotX: 1.14,
+        rotY: 0.46,
+        rotZ: 0.16,
+        speedX: -0.14,
+        speedY: 0.22,
+        speedZ: 0.24,
+        nodes: [{ speed: 0.24, phase: 1.4, size: 1.08 }],
       },
     ];
 
-    const ringItems: {
-      group: THREE.Group;
-      baseX: number;
-      baseY: number;
-      speedX: number;
-      speedY: number;
-      speedZ: number;
-    }[] = [];
+    const ringItems: RingItem[] = [];
 
-    const ringNodeGeo = new RoundedBoxGeometry(0.11, 0.11, 0.11, 3, 0.024);
-    disposableGeos.push(ringNodeGeo);
-
-    ringDefs.forEach((def) => {
+    ringConfigs.forEach((cfg) => {
       const rGroup = new THREE.Group();
-      rGroup.rotation.set(def.rotX, def.rotY, 0);
+      rGroup.rotation.set(cfg.rotX, cfg.rotY, cfg.rotZ);
 
-      const torusGeo = new THREE.TorusGeometry(def.radius, def.tube, 24, 140);
+      // Precision machined metallic torus
+      const torusGeo = new THREE.TorusGeometry(cfg.radius, cfg.tube, 28, 160);
       const torusMat = new THREE.MeshPhysicalMaterial({
-        color: def.color,
-        emissive: def.emissive,
-        emissiveIntensity: 0.34,
-        metalness: 0.92,
-        roughness: 0.16,
+        color: cfg.color,
+        emissive: cfg.emissive,
+        emissiveIntensity: cfg.emissiveIntensity,
+        metalness: 0.96,
+        roughness: 0.12,
         clearcoat: 1.0,
-        clearcoatRoughness: 0.1,
+        clearcoatRoughness: 0.06,
       });
-      rGroup.add(new THREE.Mesh(torusGeo, torusMat));
-
-      const nodeMat = new THREE.MeshStandardMaterial({
-        color: def.accentColor,
-        emissive: def.accentColor,
-        emissiveIntensity: 1.25,
-        metalness: 0.4,
-        roughness: 0.18,
-      });
-      const nodeA = new THREE.Mesh(ringNodeGeo, nodeMat);
-      nodeA.position.set(def.radius, 0, 0);
-      rGroup.add(nodeA);
-
-      const nodeB = new THREE.Mesh(ringNodeGeo, nodeMat);
-      nodeB.position.set(-def.radius, 0, 0);
-      rGroup.add(nodeB);
-
+      const torusMesh = new THREE.Mesh(torusGeo, torusMat);
+      rGroup.add(torusMesh);
       disposableGeos.push(torusGeo);
-      disposableMats.push(torusMat, nodeMat);
+      disposableMats.push(torusMat);
+
+      // Luminous rounded cube nodes orbiting along the ring track
+      const ringNodeList: RingItem["nodes"] = [];
+
+      cfg.nodes.forEach((nCfg) => {
+        const nodeMat = new THREE.MeshStandardMaterial({
+          color: cfg.accentColor,
+          emissive: cfg.accentColor,
+          emissiveIntensity: 1.45,
+          metalness: 0.35,
+          roughness: 0.14,
+        });
+        const nodeMesh = new THREE.Mesh(ringNodeGeo, nodeMat);
+        nodeMesh.scale.setScalar(nCfg.size);
+        disposableMats.push(nodeMat);
+
+        // Soft optical flare sprite attached to each node
+        const flareMat = new THREE.SpriteMaterial({
+          map: flareTex ?? undefined,
+          color: cfg.flareColor,
+          transparent: true,
+          opacity: 0.65,
+          blending: THREE.AdditiveBlending,
+          depthWrite: false,
+        });
+        const flareSprite = new THREE.Sprite(flareMat);
+        flareSprite.scale.set(0.68, 0.68, 1);
+        nodeMesh.add(flareSprite);
+        disposableMats.push(flareMat);
+
+        rGroup.add(nodeMesh);
+        ringNodeList.push({
+          mesh: nodeMesh,
+          speed: nCfg.speed,
+          phase: nCfg.phase,
+          flare: flareSprite,
+        });
+      });
+
       heroGroup.add(rGroup);
       ringItems.push({
         group: rGroup,
-        baseX: def.rotX,
-        baseY: def.rotY,
-        speedX: def.speedX,
-        speedY: def.speedY,
-        speedZ: def.speedZ,
+        radius: cfg.radius,
+        nodes: ringNodeList,
+        torusMesh,
+        torusMat,
+        baseRotX: cfg.rotX,
+        baseRotY: cfg.rotY,
+        baseRotZ: cfg.rotZ,
+        precessionSpeedX: cfg.speedX,
+        precessionSpeedY: cfg.speedY,
+        precessionSpeedZ: cfg.speedZ,
       });
     });
 
-    // 4. Sleek Orbiting Sapphire Micro-Crystals (compact & luminous, never clunky)
-    const satelliteCount = isInitialMobile ? 4 : 6;
-    const satGeo = new THREE.OctahedronGeometry(0.13, 0);
-    const satGlassMat = new THREE.MeshPhysicalMaterial({
-      color: 0x312e81,
-      emissive: 0x38bdf8,
-      emissiveIntensity: 0.45,
-      metalness: 0.85,
-      roughness: 0.1,
-      clearcoat: 1.0,
-    });
-    const satEdgesGeo = new THREE.EdgesGeometry(satGeo);
-    const satEdgesMat = new THREE.LineBasicMaterial({
-      color: 0xe0f2fe,
-      transparent: true,
-      opacity: 0.72,
-    });
-    disposableGeos.push(satGeo, satEdgesGeo);
-    disposableMats.push(satGlassMat, satEdgesMat);
+    // -------------------------------------------------------------------------
+    // 4. FLOATING CRYSTALLINE DIAMOND SATELLITES (Exact Reference Placement)
+    // -------------------------------------------------------------------------
+    const crystalPlacements = [
+      { x: -2.35, y: 2.15, z: -0.6, scale: 0.95, speed: 0.42, geoType: "octa" },
+      { x: -0.65, y: 1.95, z: -1.2, scale: 0.72, speed: 0.35, geoType: "octa" },
+      { x: 2.45, y: 1.35, z: -0.75, scale: 0.9, speed: -0.38, geoType: "octa" },
+      { x: -2.65, y: -0.25, z: 0.45, scale: 0.82, speed: 0.4, geoType: "octa" },
+      { x: 2.25, y: -1.45, z: -0.5, scale: 0.88, speed: -0.44, geoType: "octa" },
+      { x: -1.45, y: -2.1, z: 0.85, scale: 0.8, speed: 0.36, geoType: "octa" },
+    ];
+
+    const crystalSharedGeo = new THREE.OctahedronGeometry(0.16, 0);
+    const crystalSharedEdges = new THREE.EdgesGeometry(crystalSharedGeo);
+    disposableGeos.push(crystalSharedGeo, crystalSharedEdges);
 
     const satellites: {
-      mesh: THREE.Mesh;
-      radius: number;
-      angleOffset: number;
-      speed: number;
-      yAmp: number;
-      tilt: number;
+      group: THREE.Group;
+      baseX: number;
+      baseY: number;
+      baseZ: number;
+      rotSpeedX: number;
+      rotSpeedY: number;
+      orbitSpeed: number;
+      phase: number;
     }[] = [];
 
-    for (let i = 0; i < satelliteCount; i++) {
-      const mesh = new THREE.Mesh(satGeo, satGlassMat);
-      mesh.add(new THREE.LineSegments(satEdgesGeo, satEdgesMat));
-      const scale = 0.78 + (i % 3) * 0.18;
-      mesh.scale.setScalar(scale);
-      heroGroup.add(mesh);
+    crystalPlacements.forEach((cp, idx) => {
+      const cGroup = new THREE.Group();
+      cGroup.position.set(cp.x, cp.y, cp.z);
+      cGroup.scale.setScalar(cp.scale);
+
+      const glassMat = new THREE.MeshPhysicalMaterial({
+        color: 0x1e1b4b,
+        emissive: 0x38bdf8,
+        emissiveIntensity: 0.35,
+        metalness: 0.82,
+        roughness: 0.08,
+        clearcoat: 1.0,
+        transparent: true,
+        opacity: 0.65,
+      });
+
+      const edgeMat = new THREE.LineBasicMaterial({
+        color: 0xe0f2fe,
+        transparent: true,
+        opacity: 0.82,
+      });
+
+      const mesh = new THREE.Mesh(crystalSharedGeo, glassMat);
+      mesh.add(new THREE.LineSegments(crystalSharedEdges, edgeMat));
+      cGroup.add(mesh);
+
+      disposableMats.push(glassMat, edgeMat);
+      heroGroup.add(cGroup);
 
       satellites.push({
-        mesh,
-        radius: 1.72 + (i % 3) * 0.28, // max radius = 2.28 (cleanly inside right bounds)
-        angleOffset: (i / satelliteCount) * Math.PI * 2,
-        speed: 0.36 + (i % 3) * 0.12,
-        yAmp: 0.55 + (i % 2) * 0.35,
-        tilt: (i % 2 === 0 ? 1 : -1) * (0.4 + i * 0.1),
+        group: cGroup,
+        baseX: cp.x,
+        baseY: cp.y,
+        baseZ: cp.z,
+        rotSpeedX: 0.5 + (idx % 3) * 0.25,
+        rotSpeedY: 0.7 + (idx % 2) * 0.3,
+        orbitSpeed: cp.speed,
+        phase: idx * 1.05,
       });
-    }
+    });
 
-    // 5. Soft bokeh depth starfield
+    // -------------------------------------------------------------------------
+    // 5. VOLUMETRIC BOKEH DEPTH STARFIELD
+    // -------------------------------------------------------------------------
     const starCount = isInitialMobile ? 240 : 640;
     const starPos = new Float32Array(starCount * 3);
     const starColors = new Float32Array(starCount * 3);
@@ -470,7 +647,9 @@ export default function ThreeHeroScene({
     disposableGeos.push(starGeo);
     disposableMats.push(starMat);
 
-    // Interactive pointer parallax + drag-to-spin 3D inertia
+    // -------------------------------------------------------------------------
+    // 6. INTERACTIVE DRAG-TO-ORBIT INERTIA + POINTER PARALLAX
+    // -------------------------------------------------------------------------
     const pointer = { x: 0, y: 0, targetX: 0, targetY: 0 };
     const dragState = {
       isDragging: false,
@@ -495,12 +674,12 @@ export default function ThreeHeroScene({
         const dy = e.clientY - dragState.lastY;
         dragState.lastX = e.clientX;
         dragState.lastY = e.clientY;
-        dragState.velY = dx * 0.008;
-        dragState.velX = dy * 0.006;
+        dragState.velY = dx * 0.0075;
+        dragState.velX = dy * 0.0055;
         dragState.rotY += dragState.velY;
         dragState.rotX = Math.max(
           -0.85,
-          Math.min(0.85, dragState.rotX + dragState.velX)
+          Math.min(0.85, dragState.rotX + dragState.velX),
         );
       }
     };
@@ -550,7 +729,7 @@ export default function ThreeHeroScene({
       ([entry]) => {
         isHeroVisible = entry.isIntersecting;
       },
-      { rootMargin: "160px" }
+      { rootMargin: "160px" },
     );
     visibilityObserver.observe(container);
 
@@ -563,11 +742,11 @@ export default function ThreeHeroScene({
         pointer.x += (pointer.targetX - pointer.x) * 0.05;
         pointer.y += (pointer.targetY - pointer.y) * 0.05;
 
-        // Smoothly decay stage-switch pulse wave
+        // Smooth energy pulse wave on stage switch
         pulseTriggerRef.current *= 0.945;
         const pulse = pulseTriggerRef.current;
 
-        // Color morphing toward active chapter
+        // Smooth color morphing toward active chapter
         targetRimA.setHex(theme.rimA);
         targetRimB.setHex(theme.rimB);
         targetEdgeCol.setHex(theme.edge);
@@ -579,68 +758,102 @@ export default function ThreeHeroScene({
         coreShaderMat.uniforms.uRimColorA.value.lerp(targetRimA, 0.045);
         coreShaderMat.uniforms.uRimColorB.value.lerp(targetRimB, 0.045);
         shellEdgesMat.color.lerp(targetEdgeCol, 0.045);
-        reactiveRim.color.lerp(targetLightCol, 0.045);
+        cyanPointLight.color.lerp(targetLightCol, 0.045);
         haloMat.color.lerp(targetHaloCol, 0.045);
 
+        // Inertial drag momentum damping
         if (!dragState.isDragging) {
           dragState.rotY += dragState.velY;
           dragState.rotX = Math.max(
             -0.85,
-            Math.min(0.85, dragState.rotX + dragState.velX)
+            Math.min(0.85, dragState.rotX + dragState.velX),
           );
-          dragState.velY *= 0.94;
-          dragState.velX *= 0.94;
+          dragState.velY *= 0.935;
+          dragState.velX *= 0.935;
         }
 
-        // Automated camera subtle breathing & parallax drift
-        camera.position.x += (pointer.x * 0.24 - camera.position.x) * 0.04;
+        // Camera breathing & parallax tracking
+        camera.position.x += (pointer.x * 0.22 - camera.position.x) * 0.04;
         camera.position.y +=
-          (0.12 + pointer.y * 0.16 + Math.sin(elapsed * 0.45) * 0.08 - camera.position.y) *
+          (0.12 +
+            pointer.y * 0.15 +
+            Math.sin(elapsed * 0.45) * 0.07 -
+            camera.position.y) *
           0.04;
 
-        // Smoothly maintain non-overlapping sculpture placement + gentle hover bob
-        heroGroup.position.x += (layoutTarget.baseX - heroGroup.position.x) * 0.08;
-        const bobY = layoutTarget.baseY + Math.sin(elapsed * 0.95) * 0.1;
+        // Smooth non-overlapping sculpture placement + natural hovering bob
+        heroGroup.position.x +=
+          (layoutTarget.baseX - heroGroup.position.x) * 0.08;
+        const bobY = layoutTarget.baseY + Math.sin(elapsed * 0.85) * 0.09;
         heroGroup.position.y += (bobY - heroGroup.position.y) * 0.08;
 
         const breathScale =
-          layoutTarget.scale * (1 + Math.sin(elapsed * 1.1) * 0.014 + pulse * 0.045);
+          layoutTarget.scale *
+          (1 + Math.sin(elapsed * 1.05) * 0.012 + pulse * 0.04);
         heroGroup.scale.setScalar(
-          heroGroup.scale.x + (breathScale - heroGroup.scale.x) * 0.09
+          heroGroup.scale.x + (breathScale - heroGroup.scale.x) * 0.09,
         );
 
-        heroGroup.rotation.y = elapsed * 0.16 + pointer.x * 0.22 + dragState.rotY;
+        // Slow master celestial precession
+        heroGroup.rotation.y =
+          elapsed * 0.12 + pointer.x * 0.2 + dragState.rotY;
         heroGroup.rotation.x =
-          Math.sin(elapsed * 0.28) * 0.09 - pointer.y * 0.16 + dragState.rotX;
+          Math.sin(elapsed * 0.24) * 0.07 - pointer.y * 0.14 + dragState.rotX;
 
-        shellMesh.rotation.y = -elapsed * 0.2;
-        shellMesh.rotation.z = elapsed * 0.12;
-        const shellPulse = 1 + pulse * 0.06;
+        // Counter-rotation of geodesic cage and micro-energy pulse
+        shellMesh.rotation.y = -elapsed * 0.16;
+        shellMesh.rotation.z = elapsed * 0.09;
+        const shellPulse = 1 + pulse * 0.05;
         shellMesh.scale.setScalar(shellPulse);
 
-        const haloScale = 4.0 + Math.sin(elapsed * 1.4) * 0.25 + pulse * 0.7;
+        // Dynamic halo breathing
+        const haloScale = 4.2 + Math.sin(elapsed * 1.2) * 0.22 + pulse * 0.65;
         coreHalo.scale.set(haloScale, haloScale, 1);
-        haloMat.opacity = 0.36 + pulse * 0.18;
+        haloMat.opacity = 0.38 + pulse * 0.16;
 
-        const pulseBoost = 1 + pulse * 2.2;
+        // Multi-axis gyroscopic precession of rings and smooth orbital node motion
+        const pulseBoost = 1 + pulse * 1.8;
         ringItems.forEach((item, idx) => {
-          item.group.rotation.z += item.speedZ * 0.008 * pulseBoost;
+          item.group.rotation.z =
+            item.baseRotZ +
+            elapsed * item.precessionSpeedZ * 0.07 * pulseBoost;
           item.group.rotation.y =
-            item.baseY + elapsed * item.speedY * 0.35 + Math.sin(elapsed * 0.5 + idx) * 0.08;
+            item.baseRotY +
+            elapsed * item.precessionSpeedY * 0.22 +
+            Math.sin(elapsed * 0.4 + idx) * 0.06;
           item.group.rotation.x =
-            item.baseX + Math.cos(elapsed * 0.45 + idx) * 0.08;
+            item.baseRotX + Math.cos(elapsed * 0.35 + idx) * 0.06;
+
+          // Orbiting data nodes gliding along the circular perimeter
+          item.nodes.forEach((n) => {
+            const angle = elapsed * n.speed * pulseBoost + n.phase;
+            n.mesh.position.set(
+              Math.cos(angle) * item.radius,
+              Math.sin(angle) * item.radius,
+              0,
+            );
+            n.mesh.rotation.z = angle + Math.PI / 2;
+
+            if (n.flare) {
+              const flarePulse = 0.68 + Math.sin(elapsed * 3.0 + idx) * 0.12;
+              n.flare.scale.set(flarePulse, flarePulse, 1);
+            }
+          });
         });
 
+        // Floating crystalline satellites drifting in microgravity
         satellites.forEach((sat, idx) => {
-          const theta = elapsed * sat.speed * (1 + pulse * 0.4) + sat.angleOffset;
-          sat.mesh.position.x = Math.cos(theta) * sat.radius;
-          sat.mesh.position.z = Math.sin(theta) * sat.radius;
-          sat.mesh.position.y = Math.sin(theta + sat.tilt) * sat.yAmp;
-          sat.mesh.rotation.x = elapsed * 0.7 + idx;
-          sat.mesh.rotation.y = elapsed * 0.9;
+          const theta = elapsed * sat.orbitSpeed * 0.3 + sat.phase;
+          sat.group.position.x = sat.baseX + Math.sin(theta) * 0.16;
+          sat.group.position.y = sat.baseY + Math.cos(theta * 1.2) * 0.18;
+          sat.group.position.z = sat.baseZ + Math.sin(theta * 0.8) * 0.12;
+
+          sat.group.rotation.x = elapsed * sat.rotSpeedX + idx;
+          sat.group.rotation.y = elapsed * sat.rotSpeedY;
+          sat.group.rotation.z = Math.sin(elapsed * 0.5 + idx) * 0.25;
         });
 
-        starField.rotation.y = elapsed * 0.014 + pointer.x * 0.035;
+        starField.rotation.y = elapsed * 0.012 + pointer.x * 0.035;
         starField.rotation.x = pointer.y * 0.025;
 
         renderer?.render(scene, camera);

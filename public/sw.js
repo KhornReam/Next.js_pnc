@@ -1,5 +1,5 @@
-const CACHE_NAME = "pnc-journey-v1";
-const APP_SHELL = ["/", "/manifest.webmanifest", "/pwa-icon.svg"];
+const CACHE_NAME = "pnc-journey-v2";
+const APP_SHELL = ["/", "/manifest.webmanifest", "/pwa-icon.svg", "/images/logo/logo.png"];
 
 self.addEventListener("install", (event) => {
   event.waitUntil(caches.open(CACHE_NAME).then((cache) => cache.addAll(APP_SHELL)));

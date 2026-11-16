@@ -33,6 +33,10 @@ export const metadata: Metadata = {
     statusBarStyle: "black-translucent",
     title: "PNC Journey",
   },
+  icons: {
+    icon: "/pwa-icon.svg",
+    apple: "/images/logo/logo.png",
+  },
 };
 
 export default function RootLayout({

@@ -12,6 +12,7 @@ import {
   ChevronRight,
   Code2,
   Compass,
+  Download,
   Grid2x2,
   HeartPulse,
   Home,
@@ -26,6 +27,12 @@ import {
 import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { useEffect, useState } from "react";
+
+interface InstallPromptEvent extends Event {
+  prompt: () => Promise<void>;
+  userChoice: Promise<{ outcome: "accepted" | "dismissed" }>;
+}
 
 interface MobileAppNavProps {
   sheetOpen: boolean;
@@ -92,8 +99,35 @@ export default function MobileAppNav({
   onCloseSheet,
 }: MobileAppNavProps) {
   const pathname = usePathname();
+  const [installPrompt, setInstallPrompt] = useState<InstallPromptEvent | null>(null);
+  const [isInstalled, setIsInstalled] = useState(false);
   const isTabRoute = BOTTOM_TABS.some((t) => t.href === pathname);
   const isMoreActive = sheetOpen || !isTabRoute;
+
+  useEffect(() => {
+    const onInstallPrompt = (event: Event) => {
+      event.preventDefault();
+      setInstallPrompt(event as InstallPromptEvent);
+    };
+    const onInstalled = () => {
+      setIsInstalled(true);
+      setInstallPrompt(null);
+    };
+    setIsInstalled(window.matchMedia("(display-mode: standalone)").matches);
+    window.addEventListener("beforeinstallprompt", onInstallPrompt);
+    window.addEventListener("appinstalled", onInstalled);
+    return () => {
+      window.removeEventListener("beforeinstallprompt", onInstallPrompt);
+      window.removeEventListener("appinstalled", onInstalled);
+    };
+  }, []);
+
+  const installApp = async () => {
+    if (!installPrompt) return;
+    await installPrompt.prompt();
+    await installPrompt.userChoice;
+    setInstallPrompt(null);
+  };
 
   return (
     <>
@@ -158,6 +192,23 @@ export default function MobileAppNav({
                 >
                   <X className="h-4 w-4" />
                 </button>
+              </div>
+
+              <div className="mt-3 rounded-2xl border border-sky-400/20 bg-gradient-to-r from-sky-500/10 to-indigo-500/10 p-3">
+                <button
+                  type="button"
+                  onClick={installApp}
+                  disabled={!installPrompt || isInstalled}
+                  className="flex w-full items-center justify-center gap-2 rounded-xl border border-sky-300/25 bg-sky-400/10 px-4 py-2.5 text-sm font-semibold text-sky-100 transition hover:bg-sky-400/20 disabled:cursor-default disabled:opacity-80"
+                >
+                  <Download className="h-4 w-4" />
+                  {isInstalled ? "App is installed" : "Install PNC Journey"}
+                </button>
+                {!installPrompt && !isInstalled && (
+                  <p className="mt-2 text-center text-[11px] leading-relaxed text-slate-300">
+                    iPhone/iPad: tap Share, then “Add to Home Screen”. Android: open the browser menu and tap “Install app”.
+                  </p>
+                )}
               </div>
 
               {/* Campus Life App Tiles (3x2 Icon Grid) */}
