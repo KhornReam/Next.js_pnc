@@ -1,6 +1,7 @@
 import AmbientBackdrop from "@/components/layout/AmbientBackdrop";
 import Footer from "@/components/layout/Footer";
 import Navbar from "@/components/layout/Navbar";
+import PwaRegistration from "@/components/layout/PwaRegistration";
 import type { Metadata, Viewport } from "next";
 import "./globals.css";
 
@@ -12,6 +13,7 @@ export const viewport: Viewport = {
 };
 
 export const metadata: Metadata = {
+  applicationName: "Khorn Ream — My PNC Journey",
   title: {
     default: "Khorn Ream — My PNC Journey | Two Years of Learning & Software Engineering",
     template: "%s | Khorn Ream — My PNC Journey",
@@ -26,6 +28,11 @@ export const metadata: Metadata = {
     "Full-Stack Web Development",
     "Software Engineer Cambodia",
   ],
+  appleWebApp: {
+    capable: true,
+    statusBarStyle: "black-translucent",
+    title: "PNC Journey",
+  },
 };
 
 export default function RootLayout({
@@ -44,6 +51,8 @@ export default function RootLayout({
         suppressHydrationWarning
         className="relative min-h-screen antialiased selection:bg-violet-500/35 selection:text-white"
       >
+        <link rel="manifest" href="/manifest.webmanifest" />
+        <PwaRegistration />
         <AmbientBackdrop />
         <Navbar />
         <main className="relative z-10 min-h-screen">{children}</main>
