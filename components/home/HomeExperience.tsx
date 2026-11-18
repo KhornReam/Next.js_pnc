@@ -179,10 +179,10 @@ export default function HomeExperience() {
       <section className="relative flex min-h-screen items-center pt-24 pb-16 sm:pt-28 sm:pb-20">
         <ThreeHeroScene activeChapter={heroChapter} />
 
-        {/* Subtle readability scrim balancing the left story zone with the 3D scene */}
+        {/* Subtle readability scrim balancing the left story zone with the full-viewport 3D environment */}
         <div
           aria-hidden="true"
-          className="pointer-events-none absolute inset-0 bg-[linear-gradient(180deg,rgba(3,6,20,0.48)_0%,rgba(3,6,20,0.22)_55%,rgba(3,6,20,0.68)_100%)] lg:bg-[radial-gradient(circle_at_24%_48%,rgba(3,6,20,0.62)_0%,rgba(3,6,20,0.24)_46%,transparent_72%)]"
+          className="pointer-events-none absolute inset-0 bg-[linear-gradient(180deg,rgba(3,6,20,0.32)_0%,rgba(3,6,20,0.12)_55%,rgba(3,6,20,0.52)_100%)] lg:bg-[radial-gradient(circle_at_24%_46%,rgba(3,6,20,0.44)_0%,rgba(3,6,20,0.15)_44%,transparent_70%)]"
         />
 
         <div className="pointer-events-none relative z-10 mx-auto w-full max-w-7xl px-4 sm:px-6 lg:px-8">

@@ -12,8 +12,8 @@ import {
   StaggerItem,
 } from "@/components/ui/MotionPrimitives";
 import PageHeader from "@/components/ui/PageHeader";
+import PhotoShowcase3D from "@/components/ui/PhotoShowcase3D";
 import { ABOUT_DATA, CONTACT_DATA, SITE_CONFIG } from "@/data/journeyData";
-import { motion } from "framer-motion";
 import {
   ArrowRight,
   Award,
@@ -97,9 +97,12 @@ export default function AboutContent() {
             />
 
             <div className="relative grid gap-8 lg:grid-cols-[0.82fr_1.38fr] lg:items-start lg:gap-10">
-              {/* Left Studio Portrait Card & Quick Connect Plate */}
-              <div className="overflow-hidden rounded-2xl border border-white/15 bg-[#050817]/95 p-3 shadow-[0_22px_55px_rgba(2,6,23,0.82)] ring-1 ring-inset ring-white/[0.05]">
-                <div className="overflow-hidden rounded-xl border border-white/10">
+              {/* Left Interactive 3D Studio Portrait Card & Quick Connect Plate */}
+              <PhotoShowcase3D
+                accent="sky"
+                badgeLabel="3D • Portrait"
+                paddingClassName="p-3"
+                media={
                   <MemoryPhoto
                     slotId="about-portrait"
                     src={ABOUT_DATA.portraitImage}
@@ -110,78 +113,79 @@ export default function AboutContent() {
                     objectPosition="top"
                     priority
                   />
-                </div>
-
-                <div className="mt-3.5 px-1.5 pb-1">
-                  <div className="flex items-center justify-between gap-2">
-                    <span className="inline-flex items-center gap-1.5 rounded-full border border-sky-400/30 bg-sky-500/12 px-2.5 py-0.5 font-mono text-[10px] uppercase tracking-wider text-sky-200">
-                      <span className="h-1.5 w-1.5 rounded-full bg-sky-400 shadow-[0_0_8px_#38bdf8]" />
-                      <span>{SITE_CONFIG.cohortLabel}</span>
-                    </span>
-                    <span className="font-mono text-[10px] text-slate-400">
-                      Age 20
-                    </span>
-                  </div>
-
-                  <p className="mt-2.5 font-[family-name:var(--font-display)] text-lg font-bold text-white">
-                    {SITE_CONFIG.studentName}
-                  </p>
-                  <p className="text-xs text-slate-400">
-                    {SITE_CONFIG.mainInterest} • {SITE_CONFIG.careerGoal}
-                  </p>
-
-                  {/* Quick Verified Social Row */}
-                  <div className="mt-3.5 flex items-center justify-between gap-2 border-t border-white/[0.08] pt-3">
-                    <div className="flex items-center gap-1.5">
-                      <a
-                        href={CONTACT_DATA.github.url}
-                        target="_blank"
-                        rel="noreferrer"
-                        aria-label="GitHub profile"
-                        className="flex h-8 w-8 items-center justify-center rounded-lg border border-white/12 bg-white/[0.04] text-white transition hover:border-white/30 hover:bg-white/[0.1]"
-                      >
-                        <GitHubIcon className="h-3.5 w-3.5" />
-                      </a>
-                      <a
-                        href={CONTACT_DATA.linkedin.url}
-                        target="_blank"
-                        rel="noreferrer"
-                        aria-label="LinkedIn profile"
-                        className="flex h-8 w-8 items-center justify-center rounded-lg border border-[#0A66C2]/35 bg-[#0A66C2]/15 transition hover:border-[#0A66C2]/70 hover:bg-[#0A66C2]/25"
-                      >
-                        <LinkedInIcon className="h-3.5 w-3.5" />
-                      </a>
-                      <a
-                        href={
-                          CONTACT_DATA.socials[0]?.url ||
-                          "https://www.facebook.com/khorn.ream.9"
-                        }
-                        target="_blank"
-                        rel="noreferrer"
-                        aria-label="Facebook profile"
-                        className="flex h-8 w-8 items-center justify-center rounded-lg border border-[#1877F2]/35 bg-[#1877F2]/15 transition hover:border-[#1877F2]/70 hover:bg-[#1877F2]/25"
-                      >
-                        <FacebookIcon className="h-3.5 w-3.5" />
-                      </a>
-                      <a
-                        href={`mailto:${CONTACT_DATA.email}`}
-                        aria-label="Send Email"
-                        className="flex h-8 w-8 items-center justify-center rounded-lg border border-sky-400/30 bg-sky-500/12 text-sky-300 transition hover:border-sky-400/60 hover:bg-sky-500/20"
-                      >
-                        <Mail className="h-3.5 w-3.5" />
-                      </a>
+                }
+                footer={
+                  <div className="mt-3.5 px-1.5 pb-1">
+                    <div className="flex items-center justify-between gap-2">
+                      <span className="inline-flex items-center gap-1.5 rounded-full border border-sky-400/30 bg-sky-500/12 px-2.5 py-0.5 font-mono text-[10px] uppercase tracking-wider text-sky-200">
+                        <span className="h-1.5 w-1.5 rounded-full bg-sky-400 shadow-[0_0_8px_#38bdf8]" />
+                        <span>{SITE_CONFIG.cohortLabel}</span>
+                      </span>
+                      <span className="font-mono text-[10px] text-slate-400">
+                        Age 20
+                      </span>
                     </div>
 
-                    <Link
-                      href="/contact"
-                      className="inline-flex items-center gap-1 rounded-lg border border-white/12 bg-white/[0.04] px-2.5 py-1.5 font-mono text-[10px] uppercase tracking-wider text-slate-200 transition hover:border-sky-400/45 hover:text-white"
-                    >
-                      <span>Contact</span>
-                      <ArrowRight className="h-3 w-3" />
-                    </Link>
+                    <p className="mt-2.5 font-[family-name:var(--font-display)] text-lg font-bold text-white">
+                      {SITE_CONFIG.studentName}
+                    </p>
+                    <p className="text-xs text-slate-400">
+                      {SITE_CONFIG.mainInterest} • {SITE_CONFIG.careerGoal}
+                    </p>
+
+                    {/* Quick Verified Social Row */}
+                    <div className="mt-3.5 flex items-center justify-between gap-2 border-t border-white/[0.08] pt-3">
+                      <div className="flex items-center gap-1.5">
+                        <a
+                          href={CONTACT_DATA.github.url}
+                          target="_blank"
+                          rel="noreferrer"
+                          aria-label="GitHub profile"
+                          className="flex h-8 w-8 items-center justify-center rounded-lg border border-white/12 bg-white/[0.04] text-white transition hover:border-white/30 hover:bg-white/[0.1]"
+                        >
+                          <GitHubIcon className="h-3.5 w-3.5" />
+                        </a>
+                        <a
+                          href={CONTACT_DATA.linkedin.url}
+                          target="_blank"
+                          rel="noreferrer"
+                          aria-label="LinkedIn profile"
+                          className="flex h-8 w-8 items-center justify-center rounded-lg border border-[#0A66C2]/35 bg-[#0A66C2]/15 transition hover:border-[#0A66C2]/70 hover:bg-[#0A66C2]/25"
+                        >
+                          <LinkedInIcon className="h-3.5 w-3.5" />
+                        </a>
+                        <a
+                          href={
+                            CONTACT_DATA.socials[0]?.url ||
+                            "https://www.facebook.com/khorn.ream.9"
+                          }
+                          target="_blank"
+                          rel="noreferrer"
+                          aria-label="Facebook profile"
+                          className="flex h-8 w-8 items-center justify-center rounded-lg border border-[#1877F2]/35 bg-[#1877F2]/15 transition hover:border-[#1877F2]/70 hover:bg-[#1877F2]/25"
+                        >
+                          <FacebookIcon className="h-3.5 w-3.5" />
+                        </a>
+                        <a
+                          href={`mailto:${CONTACT_DATA.email}`}
+                          aria-label="Send Email"
+                          className="flex h-8 w-8 items-center justify-center rounded-lg border border-sky-400/30 bg-sky-500/12 text-sky-300 transition hover:border-sky-400/60 hover:bg-sky-500/20"
+                        >
+                          <Mail className="h-3.5 w-3.5" />
+                        </a>
+                      </div>
+
+                      <Link
+                        href="/contact"
+                        className="inline-flex items-center gap-1 rounded-lg border border-white/12 bg-white/[0.04] px-2.5 py-1.5 font-mono text-[10px] uppercase tracking-wider text-slate-200 transition hover:border-sky-400/45 hover:text-white"
+                      >
+                        <span>Contact</span>
+                        <ArrowRight className="h-3 w-3" />
+                      </Link>
+                    </div>
                   </div>
-                </div>
-              </div>
+                }
+              />
 
               {/* Right Editorial Bio Column */}
               <div className="space-y-6">
@@ -322,13 +326,12 @@ export default function AboutContent() {
                   </div>
                 </div>
 
-                {/* Curated Gallery Photo Frame */}
-                <motion.div
-                  whileHover={{ y: -3 }}
-                  transition={{ duration: 0.35, ease: [0.22, 1, 0.36, 1] }}
-                  className="overflow-hidden rounded-2xl border border-white/15 bg-[#050817]/90 p-2.5 shadow-[0_22px_55px_rgba(2,6,23,0.8)] ring-1 ring-inset ring-white/[0.05]"
-                >
-                  <div className="overflow-hidden rounded-xl border border-white/10">
+                {/* Curated Interactive 3D Gallery Photo Frame */}
+                <PhotoShowcase3D
+                  accent="indigo"
+                  badgeLabel="3D • Overlook"
+                  paddingClassName="p-2.5"
+                  media={
                     <MemoryPhoto
                       slotId="about-hometown-campus"
                       src={ABOUT_DATA.hometownImage}
@@ -338,19 +341,21 @@ export default function AboutContent() {
                       naturalAspect="landscape"
                       objectPosition="top"
                     />
-                  </div>
-                  <div className="mt-2.5 flex items-center justify-between gap-2 px-1.5 pb-1">
-                    <div className="flex items-center gap-2">
-                      <span className="h-1.5 w-1.5 rounded-full bg-indigo-400 shadow-[0_0_8px_#818cf8]" />
-                      <span className="font-mono text-[10px] uppercase tracking-wider text-slate-300">
-                        Scenic Overlook • Fresh Perspective
+                  }
+                  footer={
+                    <div className="mt-2.5 flex items-center justify-between gap-2 px-1.5 pb-1">
+                      <div className="flex items-center gap-2">
+                        <span className="h-1.5 w-1.5 rounded-full bg-indigo-400 shadow-[0_0_8px_#818cf8]" />
+                        <span className="font-mono text-[10px] uppercase tracking-wider text-slate-300">
+                          Scenic Overlook • Fresh Perspective
+                        </span>
+                      </div>
+                      <span className="rounded-full border border-white/10 bg-white/[0.04] px-2 py-0.5 font-mono text-[10px] text-sky-200">
+                        Year 2
                       </span>
                     </div>
-                    <span className="rounded-full border border-white/10 bg-white/[0.04] px-2 py-0.5 font-mono text-[10px] text-sky-200">
-                      Year 2
-                    </span>
-                  </div>
-                </motion.div>
+                  }
+                />
               </div>
             </div>
           </FadeInSection>
