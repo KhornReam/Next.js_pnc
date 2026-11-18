@@ -27,7 +27,18 @@ import {
 import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useSyncExternalStore } from "react";
+
+const subscribeStandalone = (callback: () => void) => {
+  const mql = window.matchMedia("(display-mode: standalone)");
+  mql.addEventListener("change", callback);
+  return () => mql.removeEventListener("change", callback);
+};
+
+const getStandaloneSnapshot = () =>
+  window.matchMedia("(display-mode: standalone)").matches;
+
+const getStandaloneServerSnapshot = () => false;
 
 interface InstallPromptEvent extends Event {
   prompt: () => Promise<void>;
@@ -100,7 +111,13 @@ export default function MobileAppNav({
 }: MobileAppNavProps) {
   const pathname = usePathname();
   const [installPrompt, setInstallPrompt] = useState<InstallPromptEvent | null>(null);
-  const [isInstalled, setIsInstalled] = useState(false);
+  const [installedViaEvent, setInstalledViaEvent] = useState(false);
+  const isStandalone = useSyncExternalStore(
+    subscribeStandalone,
+    getStandaloneSnapshot,
+    getStandaloneServerSnapshot,
+  );
+  const isInstalled = isStandalone || installedViaEvent;
   const isTabRoute = BOTTOM_TABS.some((t) => t.href === pathname);
   const isMoreActive = sheetOpen || !isTabRoute;
 
@@ -110,10 +127,9 @@ export default function MobileAppNav({
       setInstallPrompt(event as InstallPromptEvent);
     };
     const onInstalled = () => {
-      setIsInstalled(true);
+      setInstalledViaEvent(true);
       setInstallPrompt(null);
     };
-    setIsInstalled(window.matchMedia("(display-mode: standalone)").matches);
     window.addEventListener("beforeinstallprompt", onInstallPrompt);
     window.addEventListener("appinstalled", onInstalled);
     return () => {
